@@ -1,0 +1,39 @@
+services:
+  server:
+    image: cosmtrek/air
+    container_name: htracksv
+    working_dir: /src/
+    ports:
+      - ${API_PORT_HOST}:${API_PORT_DOCKER}
+    environment:
+      API_PORT: ${API_PORT_DOCKER}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: htrackdb:3306
+    volumes:
+      - ./:/src
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+  db:
+    image: mariadb
+    container_name: htrackdb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - ${DB_PORT_HOST}:3306
+    volumes:
+        - ./db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      retries: 3
+      start_period: 5s
+      timeout: 10s
+

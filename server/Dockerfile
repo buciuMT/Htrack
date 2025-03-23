@@ -2,7 +2,7 @@ FROM golang:1.24 AS builder
 
 WORKDIR /build
 
-COPY src/* ./
+COPY ./ ./
 
 RUN go mod download
 
