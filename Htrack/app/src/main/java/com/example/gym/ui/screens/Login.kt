@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gym.R
+import com.example.gym.data.RetrofitClient
 
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
@@ -28,12 +29,39 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gym.GymScreen
 import com.example.gym.PricesScreen
+import com.example.gym.data.LoginRequest
+import com.example.gym.data.LoginResponse
 import com.example.gym.ui.theme.GymTheme
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun SignUpScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var loginResult by remember { mutableStateOf<String?>(null) }
+
+    fun handleLogin() {
+        val call = RetrofitClient.apiService.login(LoginRequest(username, password))
+        call.enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    loginResult = loginResponse?.message
+                    if (loginResponse?.success == true) {
+                        navController.navigate("home") // Schimbă cu destinația dorită
+                    }
+                } else {
+                    loginResult = "Eroare de autentificare!"
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                loginResult = "Eroare de rețea!"
+            }
+        })
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -80,9 +108,14 @@ fun SignUpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Button(onClick = { /* TODO: Adaugă logica de înregistrare */ },
+            Button(onClick = { handleLogin() },
                 modifier = Modifier.fillMaxWidth()) {
                 Text("Conectare")
+            }
+
+            loginResult?.let {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(it, color = Color.Red)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -96,4 +129,3 @@ fun SignUpScreen(navController: NavController) {
         }
     }
 }
-
