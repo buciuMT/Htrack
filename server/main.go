@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Start")
+	fmt.Println("salut mihai")
 	err := config.Init()
 	if err != nil {
 		log.Fatalf("DB: %s", err)
