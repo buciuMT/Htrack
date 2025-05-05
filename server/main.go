@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sv/config"
-	"sv/router"
 )
 
 func main() {
 	fmt.Println("salut mihai")
-	err := config.Init()
+	context, err := ConfInit()
 	if err != nil {
 		log.Fatalf("DB: %s", err)
 	}
 	port := os.Getenv("API_PORT")
-	r := router.ConfigRouter()
+	r := ConfigRouter(context)
 	err = r.Run(fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("error %s", err)
