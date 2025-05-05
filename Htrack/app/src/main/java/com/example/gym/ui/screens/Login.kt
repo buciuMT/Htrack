@@ -1,9 +1,5 @@
 package com.example.gym.ui.screens
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,14 +20,8 @@ import com.example.gym.data.RetrofitClient
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.gym.GymScreen
-import com.example.gym.PricesScreen
 import com.example.gym.data.LoginRequest
 import com.example.gym.data.LoginResponse
-import com.example.gym.ui.theme.GymTheme
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,9 +40,12 @@ fun SignUpScreen(navController: NavController) {
                     val loginResponse = response.body()
                     loginResult = loginResponse?.message
                     if (loginResponse?.success == true) {
-                        navController.navigate("home") // Schimbă cu destinația dorită
+                        navController.navigate("PaginaAdmin/$username")
+                        // Schimbă cu destinația dorită
                     }
                 } else {
+                    //navController.navigate("PaginaAdmin/$username")
+
                     loginResult = "Eroare de autentificare!"
                 }
             }
@@ -92,8 +85,18 @@ fun SignUpScreen(navController: NavController) {
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color.White) },
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
+
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -103,8 +106,18 @@ fun SignUpScreen(navController: NavController) {
                 label = { Text("Parolă", color = Color.White) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation(),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
+
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -112,6 +125,7 @@ fun SignUpScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()) {
                 Text("Conectare")
             }
+
 
             loginResult?.let {
                 Spacer(modifier = Modifier.height(10.dp))

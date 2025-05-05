@@ -7,7 +7,14 @@ plugins {
 android {
     namespace = "com.example.gym"
     compileSdk = 35
-
+    packaging {
+        resources {
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
     defaultConfig {
         applicationId = "com.example.gym"
         minSdk = 24
@@ -40,7 +47,13 @@ android {
 }
 
 dependencies {
-
+    implementation("io.ktor:ktor-server-core:2.3.4")
+    implementation("io.ktor:ktor-server-netty:2.3.4")
+    implementation("io.ktor:ktor-server-call-logging:2.3.4")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.4")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.1.2")
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.core.ktx)
@@ -59,4 +72,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.compose.ui:ui:1.6.0")
+    implementation("androidx.compose.material:material:1.6.0")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.6.0")
+    implementation ("androidx.navigation:navigation-compose:2.7.6")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation ("androidx.activity:activity-compose:1.7.2")
 }

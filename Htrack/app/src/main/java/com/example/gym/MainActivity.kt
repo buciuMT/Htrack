@@ -47,6 +47,13 @@ class MainActivity : ComponentActivity() {
                         composable("prices") { PricesScreen(navController) } // Pagina de prețuri
                         composable("login") { SignUpScreen(navController) } //
                         composable("signup") { SignUpWithSubscriptionScreen(navController) }
+                        composable(
+                            route = "PaginaAdmin/{username}"
+                        ) { backStackEntry ->
+                            val username = backStackEntry.arguments?.getString("username") ?: ""
+                            PaginaAdmin(username = username)
+                        }
+
                     }
                 }
             }
