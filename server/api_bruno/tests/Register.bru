@@ -1,0 +1,17 @@
+meta {
+  name: Register
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/register?email="gigel@gigel.com"&username="testuser"&password="parola123q!"
+  body: none
+  auth: inherit
+}
+
+params:query {
+  email: "gigel@gigel.com"
+  username: "testuser"
+  password: "parola123q!"
+}

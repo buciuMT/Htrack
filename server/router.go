@@ -13,5 +13,7 @@ func (*CContext) Ping(c *gin.Context) {
 func ConfigRouter(context *CContext) *gin.Engine {
 	router := gin.Default()
 	router.GET("/ping", context.Ping)
+	router.POST("/login", context.C_Login)
+	router.POST("/register", context.C_Register)
 	return router
 }

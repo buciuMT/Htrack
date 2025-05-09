@@ -22,6 +22,9 @@ func GenerateNewSession(db *gorm.DB, user_id int64) string {
 
 	}
 	ses = Session{id.String(), user_id}
-	db.Create(&ses)
+	res := db.Create(&ses)
+	if res.Error != nil {
+		panic("WHY?")
+	}
 	return ses.id_session
 }

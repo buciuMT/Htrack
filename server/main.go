@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("salut mihai")
+	fmt.Println("Serverul a pornit")
 	context, err := ConfInit()
 	if err != nil {
 		log.Fatalf("DB: %s", err)
