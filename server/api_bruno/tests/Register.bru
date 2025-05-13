@@ -5,13 +5,13 @@ meta {
 }
 
 post {
-  url: http://localhost:8000/register?email="gigel@gigel.com"&username="testuser"&password="parola123q!"
+  url: http://localhost:8000/register?password=parola123q!&username=testuser&email=gigel@gigel.com
   body: none
   auth: inherit
 }
 
 params:query {
-  email: "gigel@gigel.com"
-  username: "testuser"
-  password: "parola123q!"
+  password: parola123q!
+  username: testuser
+  email: gigel@gigel.com
 }

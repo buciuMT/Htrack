@@ -26,13 +26,13 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 	email, c1 := c.Params.Get("email")
 	user_name, c2 := c.Params.Get("username")
 	password, c3 := c.Params.Get("password")
-	if !((!c1) || (!c2) || (!c3)) {
+	if !(c1 && c2 && c3) {
 		c.JSON(400, gin.H{
 			"message": "PARAM NOT FOUND",
 		})
 		return
 	}
-	fmt.Println("CEVA_____________________")
+	fmt.Println("CEVA_____________________", c1)
 	fmt.Println(email)
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), 0)
 	if err != nil {
@@ -42,8 +42,8 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 		return
 	}
 	user := User{
-		Email:    email,
-		Username: user_name,
+		Email:    string(email),
+		Username: string(user_name),
 		Parola:   string(hashed),
 		Tip_user: "USER",
 	}
