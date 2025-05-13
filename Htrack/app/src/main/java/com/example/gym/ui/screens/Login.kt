@@ -44,14 +44,15 @@ fun SignUpScreen(navController: NavController) {
                         // Schimbă cu destinația dorită
                     }
                 } else {
-                    navController.navigate("PaginaAdmin/$username")
+                    //navController.navigate("PaginaAdmin/$username")
 
                     loginResult = "Eroare de autentificare!"
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                loginResult = "Eroare de rețea!"
+                loginResult = "Eroare de rețea! ${t.localizedMessage}"
+                t.printStackTrace()
             }
         })
     }

@@ -7,7 +7,10 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import com.example.gym.service.AuthService
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -28,6 +31,7 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
     var selectedSubscription by remember { mutableStateOf("Standard") }
     val subscriptionOptions = listOf("Standard", "Gold", "Premium")
     var expanded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -85,7 +89,7 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Dropdown pentru abonament
-            Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
+           /* Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
                 OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
                     Text(selectedSubscription, color = Color.White)
                 }
@@ -105,16 +109,23 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
                         )
                     }
                 }
-            }
+            }*/
 
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
-                onClick = { /* TODO: Adaugă logica de înregistrare */ },
+                onClick = {
+                    val authService = AuthService()
+                    coroutineScope.launch {
+                        authService.registerUser(email, username, password)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Înregistrează-te")
             }
+
+
 
             Spacer(modifier = Modifier.height(10.dp))
 

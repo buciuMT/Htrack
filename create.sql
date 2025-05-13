@@ -21,3 +21,7 @@ CREATE TABLE abonaments(
     NUMAR_SEDINTE INT
 );
 
+
+SELECT * FROM users WHERE username = 'Popescu1234';
+
+

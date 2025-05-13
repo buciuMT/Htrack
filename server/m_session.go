@@ -6,8 +6,8 @@ import (
 )
 
 type Session struct {
-	id_session string `gorm:"primaryKey"`
-	id_user    int64  `gorm:"foreignKey"`
+	IdSession string `gorm:"primaryKey;column:id_session"`
+	IdUser    int64  `gorm:"column:id_user"`
 }
 
 func GenerateNewSession(db *gorm.DB, user_id int64) string {
@@ -19,12 +19,12 @@ func GenerateNewSession(db *gorm.DB, user_id int64) string {
 			break
 		}
 		id = uuid.New()
-
 	}
-	ses = Session{id.String(), user_id}
+
+	ses = Session{IdSession: id.String(), IdUser: user_id}
 	res := db.Create(&ses)
 	if res.Error != nil {
-		panic("WHY?")
+		panic("Eroare la creare sesiune!")
 	}
-	return ses.id_session
+	return ses.IdSession
 }
