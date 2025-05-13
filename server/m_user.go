@@ -1,11 +1,11 @@
 package main
 
 type User struct {
-	Id_user  int64  `gorm:"column:id_user;primaryKey"`
-	Email    string `gorm:"column:email"`
-	Username string `gorm:"column:username"`
-	Parola   string `gorm:"column:parola"`
-	Tip_user string `gorm:"column:tip_user"`
+	Id_user  int64  `gorm:"column:ID_USER;primaryKey"`
+	Email    string `gorm:"column:EMAIL"`
+	Username string `gorm:"column:USERNAME"`
+	Parola   string `gorm:"column:PAROLA"`
+	Tip_user string `gorm:"column:TIP_USER"`
 }
 
 func (User) TableName() string {

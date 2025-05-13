@@ -1,0 +1,19 @@
+meta {
+  name: loginGiggel
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8000/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "gigel",
+    "password": "gigel"
+  }
+  
+}
