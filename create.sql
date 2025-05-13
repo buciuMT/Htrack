@@ -22,6 +22,5 @@ CREATE TABLE abonaments(
 );
 
 
-SELECT * FROM users WHERE username = 'Popescu1234';
 
 
