@@ -41,11 +41,8 @@ fun SignUpScreen(navController: NavController) {
                     loginResult = loginResponse?.message
                     if (loginResponse?.success == true) {
                         navController.navigate("PaginaAdmin/$username")
-                        // Schimbă cu destinația dorită
                     }
                 } else {
-                    //navController.navigate("PaginaAdmin/$username")
-
                     loginResult = "Eroare de autentificare!"
                 }
             }

@@ -4,6 +4,8 @@ import com.example.gym.data.LoginRequest
 import com.example.gym.data.LoginResponse
 import com.example.gym.database.Database
 import android.util.Log
+import com.example.gym.data.RegisterRequest
+import com.example.gym.data.RegisterResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,34 +34,44 @@ class AuthService {
             LoginResponse(false, "Username sau parola greșită!")
         }
     }
-    suspend fun registerUser(email: String, username: String, password: String) {
-        withContext(Dispatchers.IO) {
+    suspend fun registerUser(registerRequest: RegisterRequest): RegisterResponse {
+        return withContext(Dispatchers.IO) {
             try {
                 val client = OkHttpClient()
 
-                val json = JSONObject()
-                json.put("email", email)
-                json.put("username", username)
-                json.put("password", password)
-                json.put("tip_user", "TRAINER") // AICI fixăm să fie mereu "TRAINER"
+                val json = JSONObject().apply {
+                    put("email", registerRequest.email)
+                    put("username", registerRequest.username)
+                    put("password", registerRequest.password)
+                }
 
                 val mediaType = "application/json".toMediaTypeOrNull()
-                val body = json.toString().toRequestBody(mediaType)
+                val requestBody = json.toString().toRequestBody(mediaType)
 
                 val request = Request.Builder()
-                    .url("http://10.0.2.2:8080/register") // sau IP-ul serverului tău
-                    .post(body)
+                    .url("http://10.0.2.2:8080/register")
+                    .post(requestBody)
                     .build()
 
                 val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    Log.d("Register", "User registered successfully")
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && responseBody != null) {
+                    // Presupunem că ai un JSON simplu ca răspuns
+                    val responseJson = JSONObject(responseBody)
+                    return@withContext RegisterResponse(
+                        success = responseJson.getBoolean("success"),
+                        message = responseJson.getString("message")
+                    )
                 } else {
                     Log.e("Register", "Failed to register: ${response.code}")
+                    return@withContext RegisterResponse(false, "Eroare: ${response.code}")
                 }
             } catch (e: Exception) {
                 Log.e("Register", "Exception: ${e.message}")
+                return@withContext RegisterResponse(false, "Excepție: ${e.message}")
             }
         }
     }
+
 }

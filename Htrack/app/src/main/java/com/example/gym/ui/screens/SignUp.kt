@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import com.example.gym.service.AuthService
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -22,16 +21,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.gym.R
+import com.example.gym.data.LoginRequest
+import com.example.gym.data.LoginResponse
+import com.example.gym.data.RegisterRequest
+import com.example.gym.data.RegisterResponse
+import com.example.gym.data.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun SignUpWithSubscriptionScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedSubscription by remember { mutableStateOf("Standard") }
-    val subscriptionOptions = listOf("Standard", "Gold", "Premium")
-    var expanded by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    var registerResult by remember { mutableStateOf<String?>(null) }
+    fun handleRegister() {
+        val call = RetrofitClient.apiService.registerUser(RegisterRequest(email, username, password))
+        call.enqueue(object : Callback<RegisterResponse> {
+            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
+                if (response.isSuccessful && response.body()?.success == true) {
+                    navController.navigate("PaginaAdmin/$username") // AICI navighezi doar dacă e ok
+                } else {
+                    registerResult = "Eroare: ${response.body()?.message ?: "necunoscută"}"
+                }
+            }
+
+            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                registerResult = "Eroare de rețea! ${t.localizedMessage}"
+            }
+        })
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -63,6 +83,15 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color.White) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -72,6 +101,15 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color.White) },
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -83,6 +121,15 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
                 label = { Text("Parolă", color = Color.White) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation(),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -115,10 +162,8 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    val authService = AuthService()
-                    coroutineScope.launch {
-                        authService.registerUser(email, username, password)
-                    }
+                    navController.navigate("PaginaAdmin/$username")
+                    handleRegister()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -127,14 +172,8 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
 
 
 
-            Spacer(modifier = Modifier.height(10.dp))
 
-            ClickableText(
-                text = AnnotatedString("Ai deja cont? Loghează-te"),
-                onClick = { navController.navigate("login") },
-                modifier = Modifier.fillMaxWidth(),
-                style = LocalTextStyle.current.copy(color = Color.White)
-            )
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
