@@ -3,8 +3,10 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.Call
-import com.example.gym.model.User
-import com.example.gym.model.Trainer
+import com.example.gym.model.*
+
+import retrofit2.http.Query
+
 data class LoginRequest(val username: String, val password: String)
 data class LoginResponse(val success: Boolean, val message: String,val tip_user: String?=null)
 data class RegisterRequest(val email: String, val username: String, val password: String)
@@ -22,8 +24,7 @@ interface ApiService {
     fun ping(@Body request: PingRequest): Call<PingRequest>
 
     @GET("users")
-    suspend fun getUsers(): List<User>
-
+    suspend fun getUsersByType(@Query("tip") tipUser: String): List<User>
     @GET("trainers")
     suspend fun getTrainers(): List<Trainer>
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -96,4 +97,12 @@ func (ctx *CContext) C_Login(c *gin.Context) {
 		"message":  session,
 		"tip_user": user.Tip_user,
 	})
+}
+func (ctx *CContext) GetUsers(c *gin.Context) {
+	var users []User
+	if err := ctx.DB.Where("TIP_USER = ?", "USER").Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
 }

@@ -1,5 +1,6 @@
 package com.example.gym.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gym.model.User
@@ -9,9 +10,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 
 class AdminViewModel : ViewModel() {
-
-    var users by mutableStateOf<List<User>>(emptyList())
-        private set
+    private val _users = mutableStateListOf<User>()
+    val users: List<User> get() = _users
 
     var trainers by mutableStateOf<List<Trainer>>(emptyList())
         private set
@@ -19,9 +19,11 @@ class AdminViewModel : ViewModel() {
     fun fetchUsers() {
         viewModelScope.launch {
             try {
-                users = RetrofitClient.apiService.getUsers()
+                val result = RetrofitClient.apiService.getUsersByType("USER")
+                _users.clear()
+                _users.addAll(result)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("AdminViewModel", "Eroare la fetchUsers: ${e.message}")
             }
         }
     }
