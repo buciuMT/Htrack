@@ -92,7 +92,8 @@ func (ctx *CContext) C_Login(c *gin.Context) {
 
 	session := GenerateNewSession(ctx.DB, user.Id_user)
 	c.JSON(200, gin.H{
-		"success": true,
-		"message": session,
+		"success":  true,
+		"message":  session,
+		"tip_user": user.Tip_user,
 	})
 }

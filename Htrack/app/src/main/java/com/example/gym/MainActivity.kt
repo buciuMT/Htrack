@@ -53,6 +53,10 @@ class MainActivity : ComponentActivity() {
                             val username = backStackEntry.arguments?.getString("username") ?: ""
                             PaginaAdmin(username = username)
                         }
+                        composable("PaginaUser") {
+                            UserHomeScreen(navController)
+                        }
+
 
                     }
                 }

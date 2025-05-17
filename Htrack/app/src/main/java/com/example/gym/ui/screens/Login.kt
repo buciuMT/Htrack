@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gym.R
 import com.example.gym.data.RetrofitClient
-
-import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.gym.data.LoginRequest
@@ -38,9 +36,15 @@ fun SignUpScreen(navController: NavController) {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
-                    loginResult = loginResponse?.message
+                   // loginResult = loginResponse?.message
+
                     if (loginResponse?.success == true) {
-                        navController.navigate("PaginaAdmin/$username")
+                        when (loginResponse.tip_user) {
+                            "USER" -> navController.navigate("PaginaUser")
+                            "ADMIN" -> navController.navigate("PaginaAdmin/$username")
+                            //"TRAINER" -> navController.navigate("PaginaTrainer")
+                            else -> loginResult = "Tip utilizator necunoscut!"
+                        }
                     }
                 } else {
                     loginResult = "Eroare de autentificare!"
@@ -49,10 +53,11 @@ fun SignUpScreen(navController: NavController) {
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 loginResult = "Eroare de rețea! ${t.localizedMessage}"
-                t.printStackTrace()
+                //t.printStackTrace()
             }
         })
     }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
