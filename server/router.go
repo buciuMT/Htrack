@@ -15,5 +15,6 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/ping", context.Ping)
 	router.POST("/login", context.C_Login)
 	router.POST("/register", context.C_Register)
+	router.GET("/users", context.GetUsers)
 	return router
 }
