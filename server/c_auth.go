@@ -106,3 +106,29 @@ func (ctx *CContext) GetUsers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, users)
 }
+func (ctx *CContext) GetTrainers(c *gin.Context) {
+	var users []User
+	if err := ctx.DB.Where("TIP_USER = ?", "TRAINER").Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+func (ctx *CContext) TransformUserToTrainer(c *gin.Context) {
+	userId := c.Param("id")
+
+	var user User
+	if err := ctx.DB.First(&user, "id_user = ?", userId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Utilizatorul nu a fost găsit"})
+		return
+	}
+
+	if err := ctx.DB.Model(&user).Update("tip_user", "TRAINER").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizarea tipului de utilizator"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Utilizator transformat în trainer",
+	})
+}

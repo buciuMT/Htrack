@@ -16,5 +16,8 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.POST("/login", context.C_Login)
 	router.POST("/register", context.C_Register)
 	router.GET("/users", context.GetUsers)
+	router.POST("/users/:id/transform-trainer", context.TransformUserToTrainer)
+	router.GET("/trainers", context.GetTrainers)
+
 	return router
 }

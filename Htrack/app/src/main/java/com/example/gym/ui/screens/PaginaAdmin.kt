@@ -70,13 +70,23 @@ fun PaginaAdmin(username: String, viewModel: AdminViewModel = viewModel()) {
                 LaunchedEffect(Unit) {
                     viewModel.fetchUsers()
                 }
-                UserList(viewModel.users)
+                UserList(viewModel.users) { userId ->
+                    viewModel.transformaUserInTrainer(userId)
+                }
+
             }
 
             composable(Screen.Trainers.route) {
-                viewModel.fetchTrainers()
+                LaunchedEffect(Unit) {
+                    viewModel.fetchTrainers()
+                }
                 TrainerList(viewModel.trainers)
             }
+
+
+
+
+
             composable(Screen.AddTrainer.route) {
                 AddTrainerForm { name ->
                     viewModel.addTrainer(name)
@@ -99,16 +109,14 @@ fun DrawerButton(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun UserList(users: List<User>) {
-    if (users.isEmpty()) {
-        Text("Nu există useri sau încă se încarcă.", modifier = Modifier.padding(16.dp))
-    }
-
+fun UserList(users: List<User>, onTransformClick: (Int) -> Unit) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(users) { user ->
+            var expanded by remember { mutableStateOf(false) }
+
             Card(
                 elevation = 6.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -124,6 +132,28 @@ fun UserList(users: List<User>) {
                         Text("👤 ${user.username}", style = MaterialTheme.typography.subtitle1)
                         Text("Email: ${user.email}", style = MaterialTheme.typography.body2)
                     }
+
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        }
+
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                onTransformClick(user.id_user) //
+                            }) {
+                                Text("Transformă în trainer")
+                            }
+
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+
+                            }) {
+                                Text("Dezactivează")
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -132,22 +162,46 @@ fun UserList(users: List<User>) {
 
 
 @Composable
-fun TrainerList(trainers: List<Trainer>) {
+fun TrainerList(trainers: List<User>, onMenuActionClick: (Int, String) -> Unit = { _, _ -> }) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(trainers) { trainer ->
+            var expanded by remember { mutableStateOf(false) }
+
             Card(
-                elevation = 4.dp,
+                elevation = 6.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .padding(16.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("🏋️ ${trainer.name}", style = MaterialTheme.typography.subtitle1)
+                    Column {
+                        Text("🏋️ ${trainer.username}", style = MaterialTheme.typography.subtitle1)
+                        Text("Email: ${trainer.email}", style = MaterialTheme.typography.body2)
+                    }
+
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        }
+
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+
+                                onMenuActionClick(trainer.id_user, "deactivate")
+                            }) {
+                                Text("Dezactivează")
+                            }
+
+                        }
+                    }
                 }
             }
         }

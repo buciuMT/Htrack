@@ -4,6 +4,8 @@ import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.Call
 import com.example.gym.model.*
+import retrofit2.Response
+import retrofit2.http.Path
 
 import retrofit2.http.Query
 
@@ -25,9 +27,12 @@ interface ApiService {
 
     @GET("users")
     suspend fun getUsersByType(@Query("tip") tipUser: String): List<User>
-    @GET("trainers")
-    suspend fun getTrainers(): List<Trainer>
+    @GET("/trainers")
+    suspend fun getTrainers(): List<User>
 
     @POST("trainers")
     suspend fun addTrainer(@Body trainer: Trainer)
+    @POST("/users/{id}/transform-trainer")
+    suspend fun transformUserToTrainer(@Path("id") id: Int): Response<Unit>
+
 }

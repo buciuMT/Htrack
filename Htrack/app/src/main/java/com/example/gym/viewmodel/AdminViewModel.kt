@@ -9,12 +9,14 @@ import com.example.gym.data.*
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 
+
+
 class AdminViewModel : ViewModel() {
     private val _users = mutableStateListOf<User>()
     val users: List<User> get() = _users
 
-    var trainers by mutableStateOf<List<Trainer>>(emptyList())
-        private set
+    private val _trainers = mutableStateListOf<User>()
+    val trainers: List<User> get() = _trainers
 
     fun fetchUsers() {
         viewModelScope.launch {
@@ -28,12 +30,16 @@ class AdminViewModel : ViewModel() {
         }
     }
 
+
+
     fun fetchTrainers() {
         viewModelScope.launch {
             try {
-                trainers = RetrofitClient.apiService.getTrainers()
+                val result = RetrofitClient.apiService.getUsersByType("TRAINER")  // aici apelăm endpoint-ul cu tip_user=TRAINER
+                _trainers.clear()
+                _trainers.addAll(result)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("AdminViewModel", "Eroare la fetchTrainers: ${e.message}")
             }
         }
     }
@@ -49,4 +55,21 @@ class AdminViewModel : ViewModel() {
             }
         }
     }
+    fun transformaUserInTrainer(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.apiService.transformUserToTrainer(userId)
+                if (response.isSuccessful) {
+                    fetchUsers()
+                    fetchTrainers()
+                } else {
+                    Log.e("TransformUser", "Transformare eșuată: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("TransformUser", "Eroare: ${e.message}")
+            }
+        }
+    }
+
+
 }
