@@ -4,19 +4,17 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gym.model.User
-import com.example.gym.model.Trainer
 import com.example.gym.data.*
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.*
-
-
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
 class AdminViewModel : ViewModel() {
     private val _users = mutableStateListOf<User>()
-    val users: List<User> get() = _users
+    val users: SnapshotStateList<User> get() = _users
 
     private val _trainers = mutableStateListOf<User>()
-    val trainers: List<User> get() = _trainers
+    val trainers: SnapshotStateList<User> get() = _trainers
 
     fun fetchUsers() {
         viewModelScope.launch {
@@ -30,12 +28,11 @@ class AdminViewModel : ViewModel() {
         }
     }
 
-
-
     fun fetchTrainers() {
         viewModelScope.launch {
             try {
-                val result = RetrofitClient.apiService.getUsersByType("TRAINER")  // aici apelăm endpoint-ul cu tip_user=TRAINER
+                val result = RetrofitClient.apiService.getTrainers()
+                Log.d("fetchTrainers", "Traineri primiți: ${result.map { it.tip_user }}") // DEBUG
                 _trainers.clear()
                 _trainers.addAll(result)
             } catch (e: Exception) {
@@ -44,17 +41,8 @@ class AdminViewModel : ViewModel() {
         }
     }
 
-    fun addTrainer(name: String) {
-        viewModelScope.launch {
-            try {
-                val newTrainer = Trainer(0, name)
-                RetrofitClient.apiService.addTrainer(newTrainer)
-                fetchTrainers()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+
+
     fun transformaUserInTrainer(userId: Int) {
         viewModelScope.launch {
             try {
@@ -71,5 +59,31 @@ class AdminViewModel : ViewModel() {
         }
     }
 
+    fun assignTrainer(userId: Int, trainerId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.apiService.assignTrainerToUser(userId, trainerId)
+                if (response.isSuccessful) {
+                    fetchUsers()
+                    fetchUsersFaraAntrenor()
+                } else {
+                    Log.e("AssignTrainer", "Eroare: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("AssignTrainer", "Exceptie: ${e.message}")
+            }
+        }
+    }
+    fun fetchUsersFaraAntrenor() {
+        viewModelScope.launch {
+            try {
+                val result = RetrofitClient.apiService.getUsersFaraAntrenor()
+                _users.clear()
+                _users.addAll(result)
+            } catch (e: Exception) {
+                Log.e("AdminViewModel", "Eroare la fetchUsersFaraAntrenor: ${e.message}")
+            }
+        }
+    }
 
 }

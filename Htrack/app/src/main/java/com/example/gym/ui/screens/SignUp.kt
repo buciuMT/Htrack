@@ -35,13 +35,14 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
     var registerResult by remember { mutableStateOf<String?>(null) }
     fun handleRegister() {
         val call = RetrofitClient.apiService.registerUser(RegisterRequest(email, username, password))
         call.enqueue(object : Callback<RegisterResponse> {
             override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
                 if (response.isSuccessful && response.body()?.success == true) {
-                    navController.navigate("PaginaAdmin/$username") // AICI navighezi doar dacă e ok
+                    navController.navigate("PaginaUser")
                 } else {
                     registerResult = "Eroare: ${response.body()?.message ?: "necunoscută"}"
                 }
@@ -52,6 +53,7 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
             }
         })
     }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -135,34 +137,11 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Dropdown pentru abonament
-           /* Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
-                OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(selectedSubscription, color = Color.White)
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(Color.White)
-                ) {
-                    subscriptionOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                selectedSubscription = option
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }*/
-
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    navController.navigate("PaginaAdmin/$username")
+                    navController.navigate("PaginaUser")
                     handleRegister()
                 },
                 modifier = Modifier.fillMaxWidth()

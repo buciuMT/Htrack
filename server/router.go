@@ -18,6 +18,9 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/users", context.GetUsers)
 	router.POST("/users/:id/transform-trainer", context.TransformUserToTrainer)
 	router.GET("/trainers", context.GetTrainers)
+	router.GET("/users/fara-antrenor", context.GetUsersFaraAntrenor)
+	router.POST("/users/:id/assign-trainer/:trainerId", context.SetAntrenorLaUser)
+
 
 	return router
 }

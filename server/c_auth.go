@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -131,4 +132,39 @@ func (ctx *CContext) TransformUserToTrainer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Utilizator transformat în trainer",
 	})
+}
+func (ctx *CContext) GetUsersFaraAntrenor(c *gin.Context) {
+	var users []User
+	if err := ctx.DB.
+		Where("tip_user = ? AND antrenor_id IS NULL", "USER").
+		Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare DB"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+func (ctx *CContext) SetAntrenorLaUser(c *gin.Context) {
+	userIDStr := c.Param("id")
+	trainerIDStr := c.Param("trainerId")
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID utilizator invalid"})
+		return
+	}
+
+	trainerID, err := strconv.ParseInt(trainerIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID antrenor invalid"})
+		return
+	}
+
+	if err := ctx.DB.Model(&User{}).
+		Where("id_user = ? AND tip_user = ?", userID, "USER").
+		Update("antrenor_id", trainerID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare actualizare"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Antrenor atribuit cu succes"})
 }

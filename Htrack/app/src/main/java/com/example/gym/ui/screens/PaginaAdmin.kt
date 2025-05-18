@@ -24,6 +24,8 @@ sealed class Screen(val route: String, val title: String) {
     object Users : Screen("users", "Useri")
     object Trainers : Screen("trainers", "Traineri")
     object AddTrainer : Screen("add_trainer", "Adaugă Trainer")
+    object AssignTrainer : Screen("assign_trainer", "Atribuie Traineri")
+
 }
 
 @Composable
@@ -54,7 +56,9 @@ fun PaginaAdmin(username: String, viewModel: AdminViewModel = viewModel()) {
                 DrawerButton("Cont") { navController.navigate(Screen.ContAdmin.route) }
                 DrawerButton("Vizualizează Useri") { navController.navigate(Screen.Users.route) }
                 DrawerButton("Vizualizează Traineri") { navController.navigate(Screen.Trainers.route) }
-                DrawerButton("Adaugă Traineri") { navController.navigate(Screen.AddTrainer.route) }
+                DrawerButton("Atribuie Traineri") { navController.navigate(Screen.AssignTrainer.route) }
+
+
             }
         }
     ) { padding ->
@@ -80,18 +84,26 @@ fun PaginaAdmin(username: String, viewModel: AdminViewModel = viewModel()) {
                 LaunchedEffect(Unit) {
                     viewModel.fetchTrainers()
                 }
-                TrainerList(viewModel.trainers)
+
+                val trainers = viewModel.trainers
+                TrainerList(trainers = trainers)
             }
 
-
-
-
-
-            composable(Screen.AddTrainer.route) {
-                AddTrainerForm { name ->
-                    viewModel.addTrainer(name)
+            composable(Screen.AssignTrainer.route) {
+                LaunchedEffect(Unit) {
+                    viewModel.fetchUsersFaraAntrenor()
+                    viewModel.fetchTrainers()
                 }
+
+                AssignTrainerScreen(
+                    users = viewModel.users.filter { it.tip_user == "USER" && it.antrenor_id == null },
+                    trainers = viewModel.trainers,
+                    onAssignTrainer = { userId, trainerId ->
+                        viewModel.assignTrainer(userId, trainerId)
+                    }
+                )
             }
+
         }
     }
 }
@@ -184,6 +196,8 @@ fun TrainerList(trainers: List<User>, onMenuActionClick: (Int, String) -> Unit =
                     Column {
                         Text("🏋️ ${trainer.username}", style = MaterialTheme.typography.subtitle1)
                         Text("Email: ${trainer.email}", style = MaterialTheme.typography.body2)
+                        Text("Rol: ${trainer.tip_user}", style = MaterialTheme.typography.caption)
+
                     }
 
                     Box {
@@ -249,3 +263,84 @@ fun AdminAccountPage(username: String) {
         Text("🛡️ Rol: Administrator", style = MaterialTheme.typography.body2)
     }
 }
+@Composable
+fun AssignTrainerScreen(
+    users: List<User>,
+    trainers: List<User>,
+    onAssignTrainer: (Int, Int) -> Unit
+) {
+    var showDialogForUserId by remember { mutableStateOf<Int?>(null) }
+
+    if (users.isEmpty()) {
+
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Nu există utilizatori fără antrenor", style = MaterialTheme.typography.body1)
+
+        }
+        return
+    }
+
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(users) { user ->
+            var expanded by remember { mutableStateOf(false) }
+
+            Card(elevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("👤 ${user.username}", style = MaterialTheme.typography.subtitle1)
+                        Text("Email: ${user.email}", style = MaterialTheme.typography.body2)
+                    }
+
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        }
+
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                showDialogForUserId = user.id_user
+                            }) {
+                                Text("Atribuie Trainer")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDialogForUserId != null) {
+        AlertDialog(
+            onDismissRequest = { showDialogForUserId = null },
+            title = { Text("Alege un trainer") },
+            text = {
+                Column {
+                    trainers.forEach { trainer ->
+                        Text(
+                            text = "🏋️ ${trainer.username}",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onAssignTrainer(showDialogForUserId!!, trainer.id_user)
+                                    showDialogForUserId = null
+                                }
+                                .padding(8.dp)
+                        )
+                    }
+                }
+            },
+            buttons = {}
+        )
+    }
+}
+

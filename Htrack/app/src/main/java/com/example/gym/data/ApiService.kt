@@ -30,9 +30,16 @@ interface ApiService {
     @GET("/trainers")
     suspend fun getTrainers(): List<User>
 
-    @POST("trainers")
-    suspend fun addTrainer(@Body trainer: Trainer)
     @POST("/users/{id}/transform-trainer")
     suspend fun transformUserToTrainer(@Path("id") id: Int): Response<Unit>
+
+    @POST("users/{userId}/assign-trainer/{trainerId}")
+    suspend fun assignTrainerToUser(
+        @Path("userId") userId: Int,
+        @Path("trainerId") trainerId: Int
+    ): Response<Unit>
+
+    @GET("users/fara-antrenor")
+    suspend fun getUsersFaraAntrenor(): List<User>
 
 }

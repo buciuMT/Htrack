@@ -3,5 +3,6 @@ data class User(
     val id_user: Int,
     val username: String,
     val email: String,
-    val tip_user: String
+    val tip_user: String,
+    val antrenor_id: Int?
 )
