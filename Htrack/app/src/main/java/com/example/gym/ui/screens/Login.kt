@@ -42,7 +42,7 @@ fun SignUpScreen(navController: NavController) {
                         when (loginResponse.tip_user) {
                             "USER" -> navController.navigate("PaginaUser")
                             "ADMIN" -> navController.navigate("PaginaAdmin/$username")
-                            //"TRAINER" -> navController.navigate("PaginaTrainer")
+                            "TRAINER" -> navController.navigate("PaginaTrainer/$username")
                             else -> loginResult = "Tip utilizator necunoscut!"
                         }
                     }

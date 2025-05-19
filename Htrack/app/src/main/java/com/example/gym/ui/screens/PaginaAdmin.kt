@@ -16,7 +16,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.*
 import com.example.gym.viewmodel.AdminViewModel
 import com.example.gym.model.User
-import com.example.gym.model.Trainer
 import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String, val title: String) {

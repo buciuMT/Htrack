@@ -44,8 +44,8 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") { GymScreen(navController) }
-                        composable("prices") { PricesScreen(navController) } // Pagina de prețuri
-                        composable("login") { SignUpScreen(navController) } //
+                        composable("prices") { PricesScreen(navController) }
+                        composable("login") { SignUpScreen(navController) }
                         composable("signup") { SignUpWithSubscriptionScreen(navController) }
                         composable(
                             route = "PaginaAdmin/{username}"
@@ -55,6 +55,10 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("PaginaUser") {
                             UserHomeScreen(navController)
+                        }
+                        composable("PaginaTrainer/{username}") { backStackEntry ->
+                            val username = backStackEntry.arguments?.getString("username") ?: ""
+                            TrainerHomeScreen(navController, username)
                         }
 
 
