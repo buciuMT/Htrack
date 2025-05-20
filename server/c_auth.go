@@ -12,6 +12,7 @@ import (
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	IDUser   int    `json:"id_user"`
 }
 type RegisterRequest struct {
 	Email    string `json:"email"`
@@ -97,6 +98,7 @@ func (ctx *CContext) C_Login(c *gin.Context) {
 		"success":  true,
 		"message":  session,
 		"tip_user": user.Tip_user,
+		"id_user":  user.Id_user,
 	})
 }
 func (ctx *CContext) GetUsers(c *gin.Context) {
@@ -167,4 +169,24 @@ func (ctx *CContext) SetAntrenorLaUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Antrenor atribuit cu succes"})
+}
+
+func (ctx *CContext) GetUsersByTrainer(c *gin.Context) {
+	trainerIDStr := c.Param("trainerId")
+
+	trainerID, err := strconv.Atoi(trainerIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID antrenor invalid"})
+		return
+	}
+
+	var users []User
+	if err := ctx.DB.
+		Where("tip_user = ? AND antrenor_id = ?", "USER", trainerID).
+		Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare DB"})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
 }

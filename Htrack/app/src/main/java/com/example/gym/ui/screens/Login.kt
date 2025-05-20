@@ -39,10 +39,11 @@ fun SignUpScreen(navController: NavController) {
                    // loginResult = loginResponse?.message
 
                     if (loginResponse?.success == true) {
+                        val id = loginResponse.id_user
                         when (loginResponse.tip_user) {
                             "USER" -> navController.navigate("PaginaUser")
                             "ADMIN" -> navController.navigate("PaginaAdmin/$username")
-                            "TRAINER" -> navController.navigate("PaginaTrainer/$username")
+                            "TRAINER" -> navController.navigate("PaginaTrainer/$username/$id")
                             else -> loginResult = "Tip utilizator necunoscut!"
                         }
                     }

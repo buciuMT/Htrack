@@ -22,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.gym.ui.screens.*
 import com.example.gym.ui.theme.GymTheme
 
@@ -40,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home", // Pagina principală
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") { GymScreen(navController) }
@@ -51,15 +53,24 @@ class MainActivity : ComponentActivity() {
                             route = "PaginaAdmin/{username}"
                         ) { backStackEntry ->
                             val username = backStackEntry.arguments?.getString("username") ?: ""
+
                             PaginaAdmin(username = username)
                         }
                         composable("PaginaUser") {
                             UserHomeScreen(navController)
                         }
-                        composable("PaginaTrainer/{username}") { backStackEntry ->
+                        composable(
+                            "PaginaTrainer/{username}/{id}",
+                            arguments = listOf(
+                                navArgument("username") { type = NavType.StringType },
+                                navArgument("id") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
                             val username = backStackEntry.arguments?.getString("username") ?: ""
-                            TrainerHomeScreen(navController, username)
+                            val id = backStackEntry.arguments?.getInt("id") ?: -1
+                            TrainerHomeScreen(navController, username, id)
                         }
+
 
 
                     }
@@ -119,7 +130,7 @@ fun GymScreen(navController: NavController) {
                 }
             }
 
-            // Secțiunea principală cu text și buton de acces la portal
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()

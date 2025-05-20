@@ -10,7 +10,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 data class LoginRequest(val username: String, val password: String)
-data class LoginResponse(val success: Boolean, val message: String,val tip_user: String?=null)
+data class LoginResponse(val success: Boolean, val message: String,val tip_user: String?=null,val id_user: Int?=0)
 data class RegisterRequest(val email: String, val username: String, val password: String)
 data class RegisterResponse(val success: Boolean, val message: String)
 data class PingRequest(val success:Boolean, val message:String)
@@ -41,5 +41,8 @@ interface ApiService {
 
     @GET("users/fara-antrenor")
     suspend fun getUsersFaraAntrenor(): List<User>
+
+    @GET("users/by-trainer/{trainerId}")
+    fun getAssignedUsers(@Path("trainerId") trainerId: Int): Call<List<User>>
 
 }
