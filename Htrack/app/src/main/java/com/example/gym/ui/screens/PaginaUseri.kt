@@ -10,12 +10,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gym.viewmodel.UserViewModel
+
 @Composable
-fun ContPage() {
+fun ContPage(viewModel: UserViewModel) {
+    val tipAbonament by remember { viewModel::tipAbonament }
+    val numarSedinte by remember { viewModel::numarSedinte }
+
     Column(Modifier.padding(16.dp)) {
         Text("Pagina de cont")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (!tipAbonament.isNullOrBlank() && tipAbonament != "NEACTIV") {
+            Text("Tip abonament: $tipAbonament")
+            Text("Număr ședințe: $numarSedinte")
+        } else {
+            Text("Nu ai un abonament activ.")
+        }
     }
 }
+
+
 
 @Composable
 fun IstoricPage() {
@@ -31,24 +47,26 @@ fun ConversatiiPage() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserHomeScreen(navController: NavController) {
+fun UserHomeScreen(navController: NavController, Userid: Int)
+{
+    val viewModel: UserViewModel = viewModel()
+    LaunchedEffect(Userid) {
+        viewModel.loadAbonamentActiv(Userid)
+    }
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
     var selectedItem by remember { mutableStateOf("Cont") }
     val items = listOf("Cont", "Istoric", "Conversații")
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(
-                    text = "Meniu",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-
+                Text("Meniu", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp))
                 items.forEach { item ->
                     NavigationDrawerItem(
                         label = { Text(item) },
@@ -63,15 +81,12 @@ fun UserHomeScreen(navController: NavController) {
             }
         }
     ) {
-        @OptIn(ExperimentalMaterial3Api::class)
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text(selectedItem) },
                     navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.AccountCircle, contentDescription = "Menu")
                         }
                     }
@@ -80,7 +95,8 @@ fun UserHomeScreen(navController: NavController) {
         ) { padding ->
             Box(modifier = Modifier.padding(padding).fillMaxSize()) {
                 when (selectedItem) {
-                    "Cont" -> ContPage()
+                    "Cont" -> ContPage(viewModel)
+
                     "Istoric" -> IstoricPage()
                     "Conversații" -> ConversatiiPage()
                 }

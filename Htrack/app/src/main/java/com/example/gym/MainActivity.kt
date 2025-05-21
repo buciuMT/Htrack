@@ -56,9 +56,12 @@ class MainActivity : ComponentActivity() {
 
                             PaginaAdmin(username = username)
                         }
-                        composable("PaginaUser") {
-                            UserHomeScreen(navController)
+                        composable("PaginaUser/{userId}") { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull() ?: 0
+                            UserHomeScreen(navController, userId)
                         }
+
+
                         composable(
                             "PaginaTrainer/{username}/{id}",
                             arguments = listOf(

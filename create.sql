@@ -29,3 +29,5 @@ ALTER TABLE users
 ADD CONSTRAINT fk_antrenor
 FOREIGN KEY (antrenor_id) REFERENCES users(id_user);
 
+ALTER TABLE abonaments
+ADD COLUMN TIP_ABONAMENT VARCHAR(20) NOT NULL DEFAULT 'standard';

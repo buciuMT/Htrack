@@ -4,6 +4,8 @@ import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.Call
 import com.example.gym.model.*
+import com.google.gson.annotations.SerializedName
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Path
 
@@ -14,6 +16,28 @@ data class LoginResponse(val success: Boolean, val message: String,val tip_user:
 data class RegisterRequest(val email: String, val username: String, val password: String)
 data class RegisterResponse(val success: Boolean, val message: String)
 data class PingRequest(val success:Boolean, val message:String)
+data class AbonamentResponse(
+    @SerializedName("TIP_ABONAMENT")
+    val tip_abonament: String,
+
+    @SerializedName("NUMAR_SEDINTE")
+    val numar_sedinte: Int
+)
+data class AbonamentRequest(
+    @SerializedName("id_user") val idUser: Int,
+    @SerializedName("tip_abonament") val tipAbonament: String
+)
+data class DezactivareRequest(
+    @SerializedName("id_user")
+    val idUser: Int
+)
+
+data class AbonamentAction(
+    val userId: Int,
+    val showAbonare: Boolean = false,
+    val showDezabonare: Boolean = false
+)
+
 
 interface ApiService {
     @POST("login")
@@ -45,4 +69,15 @@ interface ApiService {
     @GET("users/by-trainer/{trainerId}")
     fun getAssignedUsers(@Path("trainerId") trainerId: Int): Call<List<User>>
 
+    @GET("abonament/{id_user}")
+    suspend fun getAbonamentActiv(@Path("id_user") id: Int): Abonament
+
+    @POST("abonament")
+    fun addAbonament(@Body abonamentRequest: AbonamentRequest): Call<Abonament>
+
+    @GET("abonament/{id_user}")
+    fun getAbonament(@Path("id_user") id: Int): Call<AbonamentResponse>
+
+    @POST("abonament/dezactivare")
+    fun dezactiveazaAbonament(@Body request: DezactivareRequest): Call<ResponseBody>
 }
