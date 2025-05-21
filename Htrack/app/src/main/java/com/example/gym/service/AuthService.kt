@@ -59,9 +59,12 @@ class AuthService {
                 if (response.isSuccessful && responseBody != null) {
                     // Presupunem că ai un JSON simplu ca răspuns
                     val responseJson = JSONObject(responseBody)
+                    val idUser = if (responseJson.has("id_user")) responseJson.getInt("id_user") else null
+
                     return@withContext RegisterResponse(
                         success = responseJson.getBoolean("success"),
-                        message = responseJson.getString("message")
+                        message = responseJson.getString("message"),
+                        id_user = idUser
                     )
                 } else {
                     Log.e("Register", "Failed to register: ${response.code}")

@@ -37,12 +37,31 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
 
     var registerResult by remember { mutableStateOf<String?>(null) }
+    var idUserToNavigate by remember { mutableStateOf<Int?>(null) }
+
+    val currentIdUser by rememberUpdatedState(newValue = idUserToNavigate)
+
+    LaunchedEffect(key1 = true) {
+        snapshotFlow { currentIdUser }
+            .collect { idUser ->
+                if (idUser != null) {
+                    navController.navigate("PaginaUser/$idUser")
+                }
+            }
+    }
+
     fun handleRegister() {
         val call = RetrofitClient.apiService.registerUser(RegisterRequest(email, username, password))
         call.enqueue(object : Callback<RegisterResponse> {
             override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
                 if (response.isSuccessful && response.body()?.success == true) {
-                    navController.navigate("PaginaUser")
+                    val idUser = response.body()?.id_user
+                    if (idUser != null) {
+                        idUserToNavigate = idUser
+                        navController.navigate("PaginaUser/$idUser")
+                    } else {
+                        registerResult = "Înregistrare reușită, dar ID-ul utilizatorului lipsește."
+                    }
                 } else {
                     registerResult = "Eroare: ${response.body()?.message ?: "necunoscută"}"
                 }
@@ -141,8 +160,8 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    navController.navigate("PaginaUser")
                     handleRegister()
+                    navController.navigate("login")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
