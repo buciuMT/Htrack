@@ -24,6 +24,7 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/abonament/:id_user", context.GetAbonamentActiv)
 	router.POST("/abonament", context.AddAbonament)
 	router.POST("/abonament/dezactivare", context.DeactivateAbonament)
+	router.GET("/istoricAbonamente/:id_user", context.GetIstoricAbonamente)
 
 	return router
 }

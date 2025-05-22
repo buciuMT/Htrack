@@ -80,4 +80,8 @@ interface ApiService {
 
     @POST("abonament/dezactivare")
     fun dezactiveazaAbonament(@Body request: DezactivareRequest): Call<ResponseBody>
+
+    @GET("istoricAbonamente/{id_user}")
+    suspend fun getIstoricAbonamente(@Path("id_user") userId: Int): List<Abonament>
+
 }

@@ -300,3 +300,24 @@ func (ctx *CContext) DeactivateAbonament(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Abonament dezactivat"})
 }
+func (ctx *CContext) GetIstoricAbonamente(c *gin.Context) {
+	idUserStr := c.Param("id_user")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalid"})
+		return
+	}
+
+	var abonamente []Abonament
+	err = ctx.DB.
+		Where("id_user = ?", idUser).
+		Order("data_finalizare DESC").
+		Find(&abonamente).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la interogare"})
+		return
+	}
+
+	c.JSON(http.StatusOK, abonamente)
+}
