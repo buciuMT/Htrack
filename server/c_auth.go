@@ -26,6 +26,13 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 		})
 		return
 	}
+	var try User
+	res := ctx.DB.Where("EMAIL", &try)
+	if res.Error == nil {
+		c.JSON(406, gin.H{
+			"message": "User already exists",
+		})
+	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), 0)
 	if err != nil {
 		c.JSON(406, gin.H{
@@ -39,7 +46,7 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 		Parola:   string(hashed),
 		Tip_user: "USER",
 	}
-	res := ctx.DB.Create(&user)
+	res = ctx.DB.Create(&user)
 	if res.Error != nil {
 		c.JSON(401, gin.H{
 			"message": res.Error.Error(),
@@ -91,6 +98,7 @@ func (ctx *CContext) C_Login(c *gin.Context) {
 	}
 
 	session := GenerateNewSession(ctx.DB, user.Id_user)
+
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": session,
