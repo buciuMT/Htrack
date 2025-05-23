@@ -1,4 +1,5 @@
 package com.example.gym.ui.screens
+import android.util.Log
 import androidx.compose.material3.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,10 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gym.R
 import com.example.gym.data.RetrofitClient
-
-import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import com.example.gym.data.LoginRequest
 import com.example.gym.data.LoginResponse
 import retrofit2.Call
@@ -31,16 +31,39 @@ fun SignUpScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginResult by remember { mutableStateOf<String?>(null) }
-
+    val coroutineScope = rememberCoroutineScope()
     fun handleLogin() {
         val call = RetrofitClient.apiService.login(LoginRequest(username, password))
         call.enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
-                    loginResult = loginResponse?.message
+
                     if (loginResponse?.success == true) {
-                        navController.navigate("PaginaAdmin/$username")
+                        val idUser = loginResponse.id_user
+                        if (idUser == null) {
+                            loginResult = "ID utilizator lipsă!"
+                            return
+                        }
+
+                        coroutineScope.launch {
+                            try {
+                                val abonament = RetrofitClient.apiService.getAbonamentActiv(idUser)
+                                Log.d("LOGIN_DEBUG", "Abonament primit: $abonament")
+
+                                when (loginResponse.tip_user) {
+                                    "USER" -> navController.navigate("PaginaUser/$idUser")
+                                    "ADMIN" -> navController.navigate("PaginaAdmin/$username")
+                                    "TRAINER" -> navController.navigate("PaginaTrainer/$username/$idUser")
+                                    else -> loginResult = "Tip utilizator necunoscut!"
+                                }
+                            } catch (e: Exception) {
+                                loginResult = "Eroare la abonament: ${e.localizedMessage}"
+                            }
+                        }
+
+                    } else {
+                        loginResult = "Eroare la autentificare!"
                     }
                 } else {
                     loginResult = "Eroare de autentificare!"
@@ -49,10 +72,11 @@ fun SignUpScreen(navController: NavController) {
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 loginResult = "Eroare de rețea! ${t.localizedMessage}"
-                t.printStackTrace()
             }
         })
     }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(

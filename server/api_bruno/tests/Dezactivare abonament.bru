@@ -1,0 +1,18 @@
+meta {
+  name: Dezactivare abonament
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:8000/abonament/dezactivare
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id_user": 4
+  }
+  
+}

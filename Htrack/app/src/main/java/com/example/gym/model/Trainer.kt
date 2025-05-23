@@ -1,6 +1,8 @@
 package com.example.gym.model
 
 data class Trainer(
-    val id: Int,
-    val name: String
+    val id_user: Int,
+    val username: String,
+    val email: String,
+    val tip_user: String,
 )

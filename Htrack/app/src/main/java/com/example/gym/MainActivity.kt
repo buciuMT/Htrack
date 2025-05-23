@@ -22,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.gym.ui.screens.*
 import com.example.gym.ui.theme.GymTheme
 
@@ -40,19 +42,39 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home", // Pagina principală
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("home") { GymScreen(navController) }
-                        composable("prices") { PricesScreen(navController) } // Pagina de prețuri
-                        composable("login") { SignUpScreen(navController) } //
+                        composable("prices") { PricesScreen(navController) }
+                        composable("login") { SignUpScreen(navController) }
                         composable("signup") { SignUpWithSubscriptionScreen(navController) }
                         composable(
                             route = "PaginaAdmin/{username}"
                         ) { backStackEntry ->
                             val username = backStackEntry.arguments?.getString("username") ?: ""
+
                             PaginaAdmin(username = username)
                         }
+                        composable("PaginaUser/{userId}") { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull() ?: 0
+                            UserHomeScreen(navController, userId)
+                        }
+
+
+                        composable(
+                            "PaginaTrainer/{username}/{id}",
+                            arguments = listOf(
+                                navArgument("username") { type = NavType.StringType },
+                                navArgument("id") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
+                            val username = backStackEntry.arguments?.getString("username") ?: ""
+                            val id = backStackEntry.arguments?.getInt("id") ?: -1
+                            TrainerHomeScreen(navController, username, id)
+                        }
+
+
 
                     }
                 }
@@ -111,7 +133,7 @@ fun GymScreen(navController: NavController) {
                 }
             }
 
-            // Secțiunea principală cu text și buton de acces la portal
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()

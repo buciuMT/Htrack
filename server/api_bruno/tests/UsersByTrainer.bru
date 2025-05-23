@@ -1,0 +1,11 @@
+meta {
+  name: UsersByTrainer
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:8000/users/by-trainer/5
+  body: none
+  auth: inherit
+}

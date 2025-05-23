@@ -3,13 +3,41 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.Call
-import com.example.gym.model.User
-import com.example.gym.model.Trainer
+import com.example.gym.model.*
+import com.google.gson.annotations.SerializedName
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.Path
+
+import retrofit2.http.Query
+
 data class LoginRequest(val username: String, val password: String)
-data class LoginResponse(val success: Boolean, val message: String)
+data class LoginResponse(val success: Boolean, val message: String,val tip_user: String?=null,val id_user: Int?=0)
 data class RegisterRequest(val email: String, val username: String, val password: String)
-data class RegisterResponse(val success: Boolean, val message: String)
+data class RegisterResponse(val success: Boolean, val message: String, val id_user: Int?=null)
 data class PingRequest(val success:Boolean, val message:String)
+data class AbonamentResponse(
+    @SerializedName("TIP_ABONAMENT")
+    val tip_abonament: String,
+
+    @SerializedName("NUMAR_SEDINTE")
+    val numar_sedinte: Int
+)
+data class AbonamentRequest(
+    @SerializedName("id_user") val idUser: Int,
+    @SerializedName("tip_abonament") val tipAbonament: String
+)
+data class DezactivareRequest(
+    @SerializedName("id_user")
+    val idUser: Int
+)
+
+data class AbonamentAction(
+    val userId: Int,
+    val showAbonare: Boolean = false,
+    val showDezabonare: Boolean = false
+)
+
 
 interface ApiService {
     @POST("login")
@@ -22,11 +50,38 @@ interface ApiService {
     fun ping(@Body request: PingRequest): Call<PingRequest>
 
     @GET("users")
-    suspend fun getUsers(): List<User>
+    suspend fun getUsersByType(@Query("tip") tipUser: String): List<User>
+    @GET("/trainers")
+    suspend fun getTrainers(): List<User>
 
-    @GET("trainers")
-    suspend fun getTrainers(): List<Trainer>
+    @POST("/users/{id}/transform-trainer")
+    suspend fun transformUserToTrainer(@Path("id") id: Int): Response<Unit>
 
-    @POST("trainers")
-    suspend fun addTrainer(@Body trainer: Trainer)
+    @POST("users/{userId}/assign-trainer/{trainerId}")
+    suspend fun assignTrainerToUser(
+        @Path("userId") userId: Int,
+        @Path("trainerId") trainerId: Int
+    ): Response<Unit>
+
+    @GET("users/fara-antrenor")
+    suspend fun getUsersFaraAntrenor(): List<User>
+
+    @GET("users/by-trainer/{trainerId}")
+    fun getAssignedUsers(@Path("trainerId") trainerId: Int): Call<List<User>>
+
+    @GET("abonament/{id_user}")
+    suspend fun getAbonamentActiv(@Path("id_user") id: Int): Abonament
+
+    @POST("abonament")
+    fun addAbonament(@Body abonamentRequest: AbonamentRequest): Call<Abonament>
+
+    @GET("abonament/{id_user}")
+    fun getAbonament(@Path("id_user") id: Int): Call<AbonamentResponse>
+
+    @POST("abonament/dezactivare")
+    fun dezactiveazaAbonament(@Body request: DezactivareRequest): Call<ResponseBody>
+
+    @GET("istoricAbonamente/{id_user}")
+    suspend fun getIstoricAbonamente(@Path("id_user") userId: Int): List<Abonament>
+
 }

@@ -35,13 +35,33 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
     var registerResult by remember { mutableStateOf<String?>(null) }
+    var idUserToNavigate by remember { mutableStateOf<Int?>(null) }
+
+    val currentIdUser by rememberUpdatedState(newValue = idUserToNavigate)
+
+    LaunchedEffect(key1 = true) {
+        snapshotFlow { currentIdUser }
+            .collect { idUser ->
+                if (idUser != null) {
+                    navController.navigate("PaginaUser/$idUser")
+                }
+            }
+    }
+
     fun handleRegister() {
         val call = RetrofitClient.apiService.registerUser(RegisterRequest(email, username, password))
         call.enqueue(object : Callback<RegisterResponse> {
             override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
                 if (response.isSuccessful && response.body()?.success == true) {
-                    navController.navigate("PaginaAdmin/$username") // AICI navighezi doar dacă e ok
+                    val idUser = response.body()?.id_user
+                    if (idUser != null) {
+                        idUserToNavigate = idUser
+                        navController.navigate("PaginaUser/$idUser")
+                    } else {
+                        registerResult = "Înregistrare reușită, dar ID-ul utilizatorului lipsește."
+                    }
                 } else {
                     registerResult = "Eroare: ${response.body()?.message ?: "necunoscută"}"
                 }
@@ -52,6 +72,7 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
             }
         })
     }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -135,35 +156,12 @@ fun SignUpWithSubscriptionScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Dropdown pentru abonament
-           /* Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
-                OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(selectedSubscription, color = Color.White)
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(Color.White)
-                ) {
-                    subscriptionOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                selectedSubscription = option
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }*/
-
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    navController.navigate("PaginaAdmin/$username")
                     handleRegister()
+                    navController.navigate("login")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
