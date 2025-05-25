@@ -381,9 +381,9 @@ func (ctx *CContext) MarcheazaNotificariCitite(c *gin.Context) {
 
 	if err := ctx.DB.
 		Model(&Notificare{}).
-		Where("ID_USER = ? AND CITIT = ?", idUser, false).
-		Update("CITIT", true).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizare notificări"})
+		Where("id_user = ? AND citit = false", idUser).
+		Update("citit", true).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare DB"})
 		return
 	}
 
