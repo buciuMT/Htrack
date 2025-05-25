@@ -5,12 +5,14 @@ sealed class Notificare(
     open val data: String,
     open val citit: Boolean
 ) {
-    fun copy(citit: Boolean): Notificare = when (this) {
+
+    fun copyWithCitit(citit: Boolean): Notificare = when (this) {
         is NotificareAbonare -> this.copy(citit = citit)
         is NotificareAnulareAbonament -> this.copy(citit = citit)
         is NotificareGenerala -> this.copy(citit = citit)
     }
 }
+
 
 data class NotificareAbonare(
     override val mesaj: String,

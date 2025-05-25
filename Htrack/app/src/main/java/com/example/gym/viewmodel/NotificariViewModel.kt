@@ -1,5 +1,6 @@
 package com.example.gym.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gym.model.*
@@ -12,10 +13,9 @@ class NotificariViewModel(private val userId: Int) : ViewModel() {
     private val _notificari = MutableStateFlow<List<Notificare>>(emptyList())
     val notificari: StateFlow<List<Notificare>> = _notificari
 
-    val unreadCount: StateFlow<Int> = _notificari
-        .map { list -> list.count { !it.citit } }
-        .stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
+    private val _unreadCount = MutableStateFlow(0)
+    val unreadCount: StateFlow<Int> = _unreadCount
     init {
         loadNotificari()
     }
@@ -33,6 +33,7 @@ class NotificariViewModel(private val userId: Int) : ViewModel() {
                     )
                 }
                 _notificari.value = notificariCreate
+                updateUnreadCount()
             } catch (e: Exception) {
                 e.printStackTrace()
 
@@ -49,30 +50,23 @@ class NotificariViewModel(private val userId: Int) : ViewModel() {
             else -> "generala"
         }
     }
+    private fun updateUnreadCount() {
+        val count = _notificari.value.count { !it.citit }
+        _unreadCount.value = count
+    }
 
 
 
     fun marcheazaToateCitite() {
         viewModelScope.launch {
             try {
-                val response = RetrofitClient.apiService.marcheazaNotificariCitite(userId).execute()
-                if (response.isSuccessful) {
-                    val citite = _notificari.value.map {
-                        NotificareFactory.creeaza(
-                            tip = when (it) {
-                                is NotificareAbonare -> "abonare"
-                                is NotificareAnulareAbonament -> "anulare"
-                                is NotificareGenerala -> "generala"
-                            },
-                            mesaj = it.mesaj,
-                            data = it.data,
-                            citit = true
-                        )
-                    }
-                    _notificari.value = citite
-                }
+                RetrofitClient.apiService.marcheazaNotificariCitite(userId)
+                _notificari.value = _notificari.value.map { it.copyWithCitit(citit = true) }
+                updateUnreadCount()
             } catch (e: Exception) {
+                Log.e("Notificari", "Eroare la marcare notificări ca citite", e)
             }
         }
     }
+
 }

@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import com.example.gym.model.Notificare
 import com.example.gym.viewmodel.NotificariViewModel
 import com.example.gym.viewmodel.NotificariViewModelFactory
+import android.util.Log
+import androidx.compose.foundation.border
 
 @Composable
 fun ContPage(viewModel: UserViewModel) {
@@ -89,27 +91,39 @@ fun ConversatiiPage() {
 }
 @Composable
 fun NotificariPage(viewModel: NotificariViewModel) {
-    val notificari by viewModel.notificari.collectAsState()
-    val unreadCount by viewModel.unreadCount.collectAsState()
-
+    val notificari by viewModel.notificari.collectAsState(emptyList())
     LaunchedEffect(Unit) {
-        viewModel.marcheazaToateCitite()
+        kotlinx.coroutines.delay(2000)
+        try {
+            viewModel.marcheazaToateCitite()
+        } catch (e: Exception) {
+            Log.e("NotificariPage", "Eroare la marcare ca citit", e)
+        }
     }
+
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(notificari) { notificare ->
-            NotificareItem(notificare)
+            NotificareItem(notificare, deduceTip = viewModel::deduceTipNotificare)
         }
     }
 }
 @Composable
-fun NotificareItem(notificare: Notificare) {
-    val bgColor = if (notificare.citit) Color.White else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+fun NotificareItem(notificare: Notificare, deduceTip: (String) -> String) {
+    val tip = deduceTip(notificare.mesaj)
+    val borderColor = when {
+        notificare.citit -> Color.Transparent
+        tip == "abonare" -> Color(0xFF4CAF50)
+        tip == "anulare" -> Color(0xFFF44336)
+        else -> Color.Gray.copy(alpha = 0.5f)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .border(width = if (!notificare.citit) 2.dp else 0.dp, color = borderColor, shape = RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = if (notificare.citit) Color.White else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -124,29 +138,6 @@ fun NotificareItem(notificare: Notificare) {
         }
     }
 }
-
-@Composable
-fun NotificationsIconWithBadge(unreadCount: Int) {
-    BadgedBox(
-        badge = {
-            if (unreadCount > 0) {
-                Badge(
-                    modifier = Modifier.animateContentSize(),
-                    containerColor = MaterialTheme.colorScheme.error
-                ) {
-                    Text(text = unreadCount.toString(), color = Color.White)
-                }
-            }
-        }
-    ) {
-        Icon(
-            imageVector = Icons.Default.Notifications,
-            contentDescription = "Notificări",
-            tint = MaterialTheme.colorScheme.onSurface // poți schimba culoarea după nevoie
-        )
-    }
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
