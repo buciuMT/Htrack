@@ -203,8 +203,8 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 		Model(&Abonament{}).
 		Where("id_user = ? AND data_finalizare < ? AND tip_abonament != ?", idUser, time.Now(), "NEACTIV").
 		Updates(map[string]interface{}{
-			"tip_abonament":  "NEACTIV",
-			"numar_sedinte":  0,
+			"tip_abonament": "NEACTIV",
+			"numar_sedinte": 0,
 		}).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizarea abonamentelor"})
@@ -227,7 +227,6 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 
 	c.JSON(http.StatusOK, abonament)
 }
-
 
 func (ctx *CContext) AddAbonament(c *gin.Context) {
 	var req struct {
@@ -320,4 +319,72 @@ func (ctx *CContext) GetIstoricAbonamente(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, abonamente)
+}
+func (ctx *CContext) AddNotificare(c *gin.Context) {
+	var req struct {
+		IDUser int    `json:"id_user"`
+		Mesaj  string `json:"mesaj"`
+		Tip    string `json:"tip"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON invalid"})
+		return
+	}
+
+	notif := Notificare{
+		IDUser: req.IDUser,
+		Mesaj:  req.Mesaj,
+		Tip:    req.Tip,
+		Data:   time.Now(),
+		Citit:  false,
+	}
+
+	if err := ctx.DB.Create(&notif).Error; err != nil {
+		fmt.Println("DB ERROR:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare DB la creare notificare"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Notificare adăugată",
+		"notificare": notif,
+	})
+}
+
+func (ctx *CContext) GetNotificariUser(c *gin.Context) {
+	idUserStr := c.Param("id_user")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalid"})
+		return
+	}
+
+	var notificari []Notificare
+	if err := ctx.DB.
+		Where("ID_USER = ?", idUser).
+		Order("DATA DESC").
+		Find(&notificari).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la interogare notificări"})
+		return
+	}
+
+	c.JSON(http.StatusOK, notificari)
+}
+func (ctx *CContext) MarcheazaNotificariCitite(c *gin.Context) {
+	idUserStr := c.Param("id_user")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalid"})
+		return
+	}
+
+	if err := ctx.DB.
+		Model(&Notificare{}).
+		Where("ID_USER = ? AND CITIT = ?", idUser, false).
+		Update("CITIT", true).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizare notificări"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Toate notificările au fost marcate ca citite"})
 }

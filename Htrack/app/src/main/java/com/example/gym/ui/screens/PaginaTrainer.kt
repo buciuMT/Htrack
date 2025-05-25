@@ -1,6 +1,8 @@
 package com.example.gym.ui.screens
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,11 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gym.data.AbonamentAction
 import com.example.gym.data.AbonamentRequest
 import com.example.gym.data.DezactivareRequest
 import com.example.gym.data.AbonamentResponse
+import com.example.gym.data.NotificareRequest
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -102,9 +104,6 @@ fun TrainerUserListPage(trainerId: Int) {
     var users by remember { mutableStateOf<List<User>>(emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    var showAbonamentDialog by remember { mutableStateOf(false) }
-    var showDezactivareDialog by remember { mutableStateOf(false) }
-    var selectedUserId by remember { mutableStateOf<Int?>(null) }
     var abonamentAction by remember { mutableStateOf<AbonamentAction?>(null) }
 
     LaunchedEffect(trainerId) {
@@ -231,14 +230,33 @@ fun TrainerUserListPage(trainerId: Int) {
                     val request = AbonamentRequest(action.userId, tipAbonament)
                     RetrofitClient.apiService.addAbonament(request)
                         .enqueue(object : Callback<Abonament> {
+                            @RequiresApi(Build.VERSION_CODES.O)
                             override fun onResponse(call: Call<Abonament>, response: Response<Abonament>) {
-                                // Poți adăuga un snackbar sau refresh
+                                if (response.isSuccessful) {
+                                    val notificare = NotificareRequestFactory.creeazaPentruAbonare(
+                                        userId = action.userId,
+                                        tipAbonament = request.tipAbonament
+                                    )
+
+
+                                    RetrofitClient.apiService.addNotificare(notificare)
+                                        .enqueue(object : Callback<ResponseBody> {
+                                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                                Log.d("API", "Notificare trimisă.")
+                                            }
+
+                                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                                Log.e("API", "Eroare notificare: ${t.localizedMessage}")
+                                            }
+                                        })
+                                }
                             }
 
                             override fun onFailure(call: Call<Abonament>, t: Throwable) {
-                                // Log
+                                Log.e("API", "Eroare la abonare: ${t.localizedMessage}")
                             }
                         })
+
                 }
             )
         }
@@ -251,18 +269,29 @@ fun TrainerUserListPage(trainerId: Int) {
                     val request = DezactivareRequest(action.userId)
                     RetrofitClient.apiService.dezactiveazaAbonament(request)
                         .enqueue(object : Callback<ResponseBody> {
-                        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                            if (response.isSuccessful) {
-                                Log.d("API", "Abonament dezactivat: ${response.code()}")
-                            } else {
-                                Log.e("API", "Eroare la dezactivare: ${response.code()}")
-                            }
-                        }
+                            @RequiresApi(Build.VERSION_CODES.O)
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                if (response.isSuccessful) {
+                                    val notificare = NotificareRequestFactory.creeazaPentruDezabonare(action.userId)
 
-                        override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                            Log.e("API", "Eroare rețea: ${t.localizedMessage}")
-                        }
-                    })
+                                    RetrofitClient.apiService.addNotificare(notificare)
+                                        .enqueue(object : Callback<ResponseBody> {
+                                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                                Log.d("API", "Notificare trimisă după dezabonare.")
+                                            }
+
+                                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                                Log.e("API", "Eroare notificare: ${t.localizedMessage}")
+                                            }
+                                        })
+                                }
+                            }
+
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                Log.e("API", "Eroare la dezabonare: ${t.localizedMessage}")
+                            }
+                        })
+
                 }
             )
         }
