@@ -199,6 +199,17 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 		return
 	}
 
+	var abonament Abonament
+	err = ctx.DB.
+		Where("id_user = ? AND data_finalizare >= ? AND tip_abonament != ?", idUser, time.Now(), "NEACTIV").
+		Order("data_finalizare DESC").
+		First(&abonament).Error
+
+	if err == nil {
+		c.JSON(http.StatusOK, abonament)
+		return
+	}
+
 	err = ctx.DB.
 		Model(&Abonament{}).
 		Where("id_user = ? AND data_finalizare < ? AND tip_abonament != ?", idUser, time.Now(), "NEACTIV").
@@ -206,26 +217,16 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 			"tip_abonament": "NEACTIV",
 			"numar_sedinte": 0,
 		}).Error
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizarea abonamentelor"})
 		return
 	}
 
-	var abonament Abonament
-	err = ctx.DB.
-		Where("id_user = ? AND data_finalizare >= ?", idUser, time.Now()).
-		Order("data_finalizare DESC").
-		First(&abonament).Error
-
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"tip_abonament": "NEACTIV",
-			"numar_sedinte": 0,
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, abonament)
+	c.JSON(http.StatusOK, gin.H{
+		"tip_abonament": "NEACTIV",
+		"numar_sedinte": 0,
+	})
 }
 
 func (ctx *CContext) AddAbonament(c *gin.Context) {
