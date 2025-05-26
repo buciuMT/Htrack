@@ -1,5 +1,6 @@
 package com.example.gym.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gym.model.*
@@ -54,25 +55,20 @@ class NotificariViewModel(private val userId: Int) : ViewModel() {
 
     fun marcheazaToateCitite() {
         viewModelScope.launch {
+            Log.d("NotificariVM", "Am intrat în marcheazaToateCitite")
             try {
-                val response = RetrofitClient.apiService.marcheazaNotificariCitite(userId).execute()
+                val response = RetrofitClient.apiService.marcheazaNotificariCitite(userId)
+                Log.d("NotificariVM", "Cod răspuns: ${response.code()}")
                 if (response.isSuccessful) {
-                    val citite = _notificari.value.map {
-                        NotificareFactory.creeaza(
-                            tip = when (it) {
-                                is NotificareAbonare -> "abonare"
-                                is NotificareAnulareAbonament -> "anulare"
-                                is NotificareGenerala -> "generala"
-                            },
-                            mesaj = it.mesaj,
-                            data = it.data,
-                            citit = true
-                        )
-                    }
-                    _notificari.value = citite
+                    loadNotificari()
+                } else {
+                    Log.e("NotificariVM", "Eșuat: ${response.code()}")
                 }
             } catch (e: Exception) {
+                Log.e("NotificariVM", "Eroare rețea: ${e.message}")
             }
         }
     }
+
+
 }

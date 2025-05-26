@@ -1,5 +1,12 @@
 package com.example.gym.ui.screens
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.material3.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,9 +24,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import com.example.gym.model.Notificare
 import com.example.gym.viewmodel.NotificariViewModel
 import com.example.gym.viewmodel.NotificariViewModelFactory
+import kotlinx.coroutines.delay
 
 @Composable
 fun ContPage(viewModel: UserViewModel) {
@@ -90,9 +99,9 @@ fun ConversatiiPage() {
 @Composable
 fun NotificariPage(viewModel: NotificariViewModel) {
     val notificari by viewModel.notificari.collectAsState()
-    val unreadCount by viewModel.unreadCount.collectAsState()
 
     LaunchedEffect(Unit) {
+        delay(2000)
         viewModel.marcheazaToateCitite()
     }
 
@@ -102,13 +111,31 @@ fun NotificariPage(viewModel: NotificariViewModel) {
         }
     }
 }
+
+
+
 @Composable
 fun NotificareItem(notificare: Notificare) {
+    val isUnread = !notificare.citit
+    val tip = when {
+        notificare.mesaj.contains("dezactivat", ignoreCase = true) -> "anulare"
+        notificare.mesaj.contains("activat", ignoreCase = true) -> "abonare"
+        else -> "generala"
+    }
+
+    val borderColor = when {
+        isUnread && tip == "anulare" -> Color.Red
+        isUnread -> Color(0xFF4CAF50)
+        else -> Color.Transparent
+    }
+
     val bgColor = if (notificare.citit) Color.White else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .border(width = if (isUnread) 2.dp else 0.dp, color = borderColor, shape = RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = bgColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(12.dp)
@@ -125,64 +152,87 @@ fun NotificareItem(notificare: Notificare) {
     }
 }
 
-@Composable
-fun NotificationsIconWithBadge(unreadCount: Int) {
-    BadgedBox(
-        badge = {
-            if (unreadCount > 0) {
-                Badge(
-                    modifier = Modifier.animateContentSize(),
-                    containerColor = MaterialTheme.colorScheme.error
-                ) {
-                    Text(text = unreadCount.toString(), color = Color.White)
-                }
-            }
-        }
-    ) {
-        Icon(
-            imageVector = Icons.Default.Notifications,
-            contentDescription = "Notificări",
-            tint = MaterialTheme.colorScheme.onSurface // poți schimba culoarea după nevoie
-        )
-    }
-}
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserHomeScreen(navController: NavController, Userid: Int)
-{
+fun UserHomeScreen(navController: NavController, Userid: Int) {
     val viewModel: UserViewModel = viewModel()
     val notificariViewModel: NotificariViewModel = viewModel(
         factory = NotificariViewModelFactory(Userid)
     )
+    val notificari by notificariViewModel.notificari.collectAsState(emptyList())
+    val areNotificariNecitite = notificari.any { !it.citit }
 
     LaunchedEffect(Userid) {
         viewModel.loadAbonamentActiv(Userid)
         viewModel.loadIstoricAbonamente(Userid)
-
     }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedItem by remember { mutableStateOf("Cont") }
-    val items = listOf("Cont", "Notificari","Istoric Abonamente", "Conversații")
 
+    val infiniteTransition = rememberInfiniteTransition(label = "notificari_puls")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (areNotificariNecitite) 1.1f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "puls_scale"
+    )
+
+    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Conversații", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("Meniu", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp))
+                Text(
+                    "Meniu",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+
                 items.forEach { item ->
+                    val isLogout = item == "Deconectează-te"
+                    val isNotificari = item == "Notificari"
+
+                    val itemModifier = Modifier
+                        .padding(NavigationDrawerItemDefaults.ItemPadding)
+                        .then(
+                            if (isNotificari && areNotificariNecitite) Modifier.graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                            } else Modifier
+                        )
+
                     NavigationDrawerItem(
-                        label = { Text(item) },
-                        selected = item == selectedItem,
-                        onClick = {
-                            selectedItem = item
-                            scope.launch { drawerState.close() }
+                        label = {
+                            Text(
+                                text = item,
+                                color = when {
+                                    isLogout -> Color.Red
+                                    isNotificari && areNotificariNecitite -> Color.Red
+                                    else -> LocalContentColor.current
+                                },
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        selected = item == selectedItem && !isLogout,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            if (isLogout) {
+                                navController.navigate("home") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            } else {
+                                selectedItem = item
+                            }
+                        },
+                        modifier = itemModifier
                     )
                 }
             }
@@ -200,7 +250,9 @@ fun UserHomeScreen(navController: NavController, Userid: Int)
                 )
             }
         ) { padding ->
-            Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            Box(modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()) {
                 when (selectedItem) {
                     "Cont" -> ContPage(viewModel)
                     "Notificari" -> NotificariPage(notificariViewModel)
@@ -211,3 +263,4 @@ fun UserHomeScreen(navController: NavController, Userid: Int)
         }
     }
 }
+

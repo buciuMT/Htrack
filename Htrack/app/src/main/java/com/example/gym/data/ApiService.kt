@@ -104,5 +104,5 @@ interface ApiService {
     suspend fun getNotificariUser(@Path("id_user") userId: Int): List<NotificareResponse>
 
     @POST("notificari/citit/{id_user}")
-    fun marcheazaNotificariCitite(@Path("id_user") userId: Int): Call<ResponseBody>
+    suspend fun marcheazaNotificariCitite(@Path("id_user") userId: Int): Response<ResponseBody>
 }

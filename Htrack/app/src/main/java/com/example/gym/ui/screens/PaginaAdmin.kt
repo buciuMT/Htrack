@@ -11,8 +11,10 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.gym.viewmodel.AdminViewModel
 import com.example.gym.model.User
@@ -28,7 +30,7 @@ sealed class Screen(val route: String, val title: String) {
 }
 
 @Composable
-fun PaginaAdmin(username: String, viewModel: AdminViewModel = viewModel()) {
+fun PaginaAdmin(username: String, navGlController: NavHostController,viewModel: AdminViewModel = viewModel()) {
     val navController = rememberNavController()
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -56,6 +58,15 @@ fun PaginaAdmin(username: String, viewModel: AdminViewModel = viewModel()) {
                 DrawerButton("Vizualizează Useri") { navController.navigate(Screen.Users.route) }
                 DrawerButton("Vizualizează Traineri") { navController.navigate(Screen.Trainers.route) }
                 DrawerButton("Atribuie Traineri") { navController.navigate(Screen.AssignTrainer.route) }
+                Text(
+                    "Deconectează-te",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { navGlController.navigate("home") }
+                        .padding(vertical = 12.dp),
+                    style = MaterialTheme.typography.body1
+                )
 
 
             }

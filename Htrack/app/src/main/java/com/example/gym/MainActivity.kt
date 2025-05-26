@@ -49,13 +49,11 @@ class MainActivity : ComponentActivity() {
                         composable("prices") { PricesScreen(navController) }
                         composable("login") { SignUpScreen(navController) }
                         composable("signup") { SignUpWithSubscriptionScreen(navController) }
-                        composable(
-                            route = "PaginaAdmin/{username}"
-                        ) { backStackEntry ->
+                        composable("PaginaAdmin/{username}") { backStackEntry ->
                             val username = backStackEntry.arguments?.getString("username") ?: ""
-
-                            PaginaAdmin(username = username)
+                            PaginaAdmin(username = username, navGlController = navController)
                         }
+
                         composable("PaginaUser/{userId}") { backStackEntry ->
                             val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull() ?: 0
                             UserHomeScreen(navController, userId)

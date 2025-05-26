@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import com.example.gym.data.AbonamentAction
 import com.example.gym.data.AbonamentRequest
 import com.example.gym.data.DezactivareRequest
@@ -35,7 +36,7 @@ fun TrainerHomeScreen(navController: NavController, username: String, trainerId:
     val scope = rememberCoroutineScope()
 
     var selectedItem by remember { mutableStateOf("Cont") }
-    val items = listOf("Cont", "Useri", "Adaugă Poll")
+    val items = listOf("Cont", "Useri", "Adaugă Poll", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -48,19 +49,31 @@ fun TrainerHomeScreen(navController: NavController, username: String, trainerId:
                 )
 
                 items.forEach { item ->
+                    val isLogout = item == "Deconectează-te"
                     NavigationDrawerItem(
-                        label = { Text(item) },
-                        selected = item == selectedItem,
+                        label = {
+                            Text(
+                                text = item,
+                                color = if (isLogout) Color.Red else LocalContentColor.current
+                            )
+                        },
+                        selected = item == selectedItem && !isLogout,
                         onClick = {
-                            selectedItem = item
                             scope.launch { drawerState.close() }
+                            if (isLogout) {
+                                navController.navigate("home") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            } else {
+                                selectedItem = item
+                            }
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
             }
         }
-    ) {
+    ){
         Scaffold(
             topBar = {
                 TopAppBar(
