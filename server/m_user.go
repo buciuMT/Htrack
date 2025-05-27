@@ -28,6 +28,20 @@ type Notificare struct {
 	Data         time.Time `gorm:"column:DATA" json:"data"`
 	Citit        bool      `gorm:"column:CITIT" json:"citit"`
 }
+type Poll struct {
+	IDPoll    uint      `gorm:"primaryKey;column:ID_POLL" json:"id_poll"`
+	IDTrainer uint      `gorm:"column:ID_TRAINER" json:"id_trainer"`
+	Activ     bool      `gorm:"column:ACTIV" json:"activ"`
+	Data      time.Time `gorm:"column:DATA" json:"data"`
+}
+
+type Vote struct {
+	IDVote  uint      `gorm:"primaryKey;column:ID_VOTE" json:"id_vote"`
+	IDPoll  uint      `gorm:"column:ID_POLL" json:"id_poll"`
+	IDUser  uint      `gorm:"column:ID_USER" json:"id_user"`
+	Ora     int       `gorm:"column:ORA" json:"ora"`
+	DataVot time.Time `gorm:"column:DATA_VOT" json:"data_vot"`
+}
 
 func (User) TableName() string {
 	return "users"
