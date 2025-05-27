@@ -6,8 +6,8 @@ import (
 )
 
 type Session struct {
-	IdSession string `gorm:"primaryKey;column:id_session"`
-	IdUser    int64  `gorm:"column:id_user"`
+	IdSession string `gorm:"primaryKey;column:ID_SESSION"`
+	IdUser    int64  `gorm:"column:ID_USER"`
 }
 
 func GenerateNewSession(db *gorm.DB, user_id int64) string {

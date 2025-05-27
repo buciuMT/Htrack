@@ -27,3 +27,12 @@ func (ctx *CContext) MID_auth(c *gin.Context) {
 	c.Set("user", user)
 	c.Next()
 }
+
+func (ctx *CContext) MID_admin(c *gin.Context) {
+	user := c.MustGet("user").(User)
+	if user.Tip_user != "Admin" {
+		c.JSON(401, "Not enough permisions")
+		return
+	}
+	c.Next()
+}
