@@ -21,9 +21,9 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.POST("/abonament", context.AddAbonament)
 	router.POST("/abonament/dezactivare", context.DeactivateAbonament)
 	router.GET("/istoricAbonamente/:id_user", context.GetIstoricAbonamente)
-	// router.POST("/notificari", context.AddNotificare)
-	// router.GET("/notificari/:id_user", context.GetNotificariUser)
-	// router.POST("/notificari/citit/:id_user", context.MarcheazaNotificariCitite)
+	router.POST("/notificari", context.AddNotificare)
+	router.GET("/notificari/:id_user", context.GetNotificariUser)
+	router.POST("/notificari/citit/:id_user", context.MarcheazaNotificariCitite)
 	_ = logged_in
 	return router
 }
