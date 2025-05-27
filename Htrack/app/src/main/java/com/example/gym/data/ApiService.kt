@@ -37,6 +37,20 @@ data class AbonamentAction(
     val showAbonare: Boolean = false,
     val showDezabonare: Boolean = false
 )
+data class NotificareRequest(
+    val tip: String,
+    val id_user: Int,
+    val mesaj: String,
+    val data: String
+)
+data class NotificareResponse(
+    @SerializedName("ID_NOTIFICARE") val idNotificare: Int,
+    @SerializedName("ID_USER") val idUser: Int,
+    val mesaj: String,
+    val data: String,
+    val citit: Boolean,
+    val tip: String
+)
 
 
 interface ApiService {
@@ -83,5 +97,12 @@ interface ApiService {
 
     @GET("istoricAbonamente/{id_user}")
     suspend fun getIstoricAbonamente(@Path("id_user") userId: Int): List<Abonament>
+    @POST("notificari")
+    fun addNotificare(@Body notificare: NotificareRequest): Call<ResponseBody>
 
+    @GET("notificari/{id_user}")
+    suspend fun getNotificariUser(@Path("id_user") userId: Int): List<NotificareResponse>
+
+    @POST("notificari/citit/{id_user}")
+    suspend fun marcheazaNotificariCitite(@Path("id_user") userId: Int): Response<ResponseBody>
 }

@@ -11,23 +11,19 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.POST("/login", context.C_Login)
 	router.POST("/register", context.C_Register)
 	logged_in := router.Group("/")
-
-	logged_in.Use(context.MID_auth)
-	{
-		admin := logged_in.Group("/")
-		admin.Use(context.MID_admin)
-		{
-			admin.GET("/users", context.GetUsers)
-			admin.POST("/users/:id/transform-trainer", context.TransformUserToTrainer)
-			admin.GET("/trainers", context.GetTrainers)
-			admin.GET("/users/fara-antrenor", context.GetUsersFaraAntrenor)
-			admin.POST("/users/:id/assign-trainer/:trainerId", context.SetAntrenorLaUser)
-			admin.GET("/users/by-trainer/:trainerId", context.GetUsersByTrainer)
-			admin.GET("/abonament/:id_user", context.GetAbonamentActiv)
-			admin.POST("/abonament", context.AddAbonament)
-			admin.POST("/abonament/dezactivare", context.DeactivateAbonament)
-			admin.GET("/istoricAbonamente/:id_user", context.GetIstoricAbonamente)
-		}
-	}
+	router.GET("/users", context.GetUsers)
+	router.POST("/users/:id/transform-trainer", context.TransformUserToTrainer)
+	router.GET("/trainers", context.GetTrainers)
+	router.GET("/users/fara-antrenor", context.GetUsersFaraAntrenor)
+	router.POST("/users/:id/assign-trainer/:trainerId", context.SetAntrenorLaUser)
+	router.GET("/users/by-trainer/:trainerId", context.GetUsersByTrainer)
+	router.GET("/abonament/:id_user", context.GetAbonamentActiv)
+	router.POST("/abonament", context.AddAbonament)
+	router.POST("/abonament/dezactivare", context.DeactivateAbonament)
+	router.GET("/istoricAbonamente/:id_user", context.GetIstoricAbonamente)
+	// router.POST("/notificari", context.AddNotificare)
+	// router.GET("/notificari/:id_user", context.GetNotificariUser)
+	// router.POST("/notificari/citit/:id_user", context.MarcheazaNotificariCitite)
+	_ = logged_in
 	return router
 }
