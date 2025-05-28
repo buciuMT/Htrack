@@ -29,10 +29,10 @@ type Notificare struct {
 	Citit        bool      `gorm:"column:CITIT" json:"citit"`
 }
 type Poll struct {
-	IDPoll    uint      `gorm:"primaryKey;column:ID_POLL" json:"id_poll"`
-	IDTrainer uint      `gorm:"column:ID_TRAINER" json:"id_trainer"`
-	Activ     bool      `gorm:"column:ACTIV" json:"activ"`
-	Data      time.Time `gorm:"column:DATA" json:"data"`
+	ID_POLL        uint   `gorm:"primaryKey;column:ID_POLL" json:"id_poll"`
+	TrainerID int    `gorm:"column:ID_TRAINER" json:"trainer_id"`
+	IsActive  bool   `gorm:"column:ACTIV" json:"is_active"`
+	Votes     []Vote `gorm:"foreignKey:IDPoll" json:"votes"`
 }
 
 type Vote struct {

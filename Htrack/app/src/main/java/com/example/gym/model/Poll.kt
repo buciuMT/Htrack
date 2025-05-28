@@ -1,8 +1,8 @@
 package com.example.gym.model
-
+import com.google.gson.annotations.SerializedName
 data class Poll(
-    val id: Int,
-    val trainerId: Int,
-    val isActive: Boolean,
-    val votes: List<Vote> = listOf()
+    @SerializedName("id_poll") val id: Int,
+    @SerializedName("id_trainer") val trainerId: Int,
+    @SerializedName("activ") val isActive: Boolean,
+    @SerializedName("data") val date: String
 )

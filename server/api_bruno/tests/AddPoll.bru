@@ -1,0 +1,18 @@
+meta {
+  name: AddPoll
+  type: http
+  seq: 19
+}
+
+post {
+  url: http://localhost:8000/poll
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id_trainer": 5
+  }
+  
+}

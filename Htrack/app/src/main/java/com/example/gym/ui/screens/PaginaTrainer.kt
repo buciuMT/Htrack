@@ -16,14 +16,20 @@ import com.example.gym.model.*
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import com.example.gym.data.AbonamentAction
 import com.example.gym.data.AbonamentRequest
 import com.example.gym.data.DezactivareRequest
 import com.example.gym.data.AbonamentResponse
 import com.example.gym.data.NotificareRequest
+import com.example.gym.data.PollResponse
+import com.example.gym.data.VoteResponse
+import com.example.gym.repository.PollRepository
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -96,6 +102,7 @@ fun TrainerHomeScreen(navController: NavController, username: String, trainerId:
                 when (selectedItem) {
                     "Cont" -> TrainerContPage(username, trainerId)
                     "Useri" -> TrainerUserListPage(trainerId = trainerId)
+                    "Adaugă Poll" -> TrainerCreatePollPage(trainerId)
                 }
             }
         }
@@ -379,3 +386,131 @@ fun ConfirmDezactivareDialog(
         }
     )
 }
+@Composable
+fun TrainerCreatePollPage(trainerId: Int) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val repo = remember { PollRepository(RetrofitClient.apiService) }
+
+    var isLoading by remember { mutableStateOf(false) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    var activePoll by remember { mutableStateOf<Poll?>(null) }
+    var votes by remember { mutableStateOf<List<VoteResponse>>(emptyList()) }
+
+    fun loadPollAndVotes() {
+        scope.launch {
+            try {
+                activePoll = repo.getActivePollForTrainer(trainerId)
+                activePoll?.let { poll ->
+                    votes = repo.getVotesForPoll(poll.id)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Eroare la încărcarea pollului: ${e.message}"
+                activePoll = null
+                votes = emptyList()
+            }
+        }
+    }
+
+    LaunchedEffect(true) {
+        loadPollAndVotes()
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        if (activePoll == null) {
+            Button(
+                onClick = {
+                    isLoading = true
+                    scope.launch {
+                        try {
+                            repo.createPoll(trainerId)
+                            successMessage = "Poll creat cu succes!"
+                            errorMessage = null
+                            loadPollAndVotes()
+                        } catch (e: Exception) {
+                            errorMessage = "Eroare la creare: ${e.message}"
+                            successMessage = null
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading
+            ) {
+                Text("Creează Poll")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator()
+        }
+
+        successMessage?.let { Text(it, color = Color.Green) }
+        errorMessage?.let { Text(it, color = Color.Red) }
+
+        activePoll?.let { poll ->
+            Spacer(Modifier.height(16.dp))
+            Text("Poll activ: #${poll.id}", style = MaterialTheme.typography.titleMedium)
+
+            if (votes.isEmpty()) {
+                Text("Niciun vot înregistrat.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Voturi:", fontWeight = FontWeight.Bold)
+
+                    votes.forEach { vote ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text("Username: ${vote.username}", style = MaterialTheme.typography.bodyLarge)
+                                    Text("Ora selectată: ${vote.ora}", style = MaterialTheme.typography.bodyMedium)
+                                }
+
+
+                                IconButton(onClick = { /* TODO: implementare viitoare */ }) {
+                                    Icon(Icons.Default.MoreVert, contentDescription = "Modifică ora")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(onClick = {
+                scope.launch {
+                    try {
+                        repo.deactivatePoll(poll.id)
+                        successMessage = "Poll dezactivat cu succes!"
+                        errorMessage = null
+                        activePoll = null
+                        votes = emptyList()
+                    } catch (e: Exception) {
+                        errorMessage = "Eroare la dezactivare: ${e.message}"
+                    }
+                }
+            }) {
+                Text("Dezactivează Poll")
+            }
+        }
+    }
+}
+

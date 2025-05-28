@@ -24,6 +24,14 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.POST("/notificari", context.AddNotificare)
 	router.GET("/notificari/:id_user", context.GetNotificariUser)
 	router.POST("/notificari/citit/:id_user", context.MarcheazaNotificariCitite)
+	router.POST("/poll", context.AddPoll)
+	router.POST("/poll/dezactivare/:id_poll", context.DeactivatePoll)
+	router.GET("/poll/trainer/:id_trainer", context.GetPollTrainer)
+	router.POST("/vote", context.SubmitVote)
+	router.GET("/poll/user/:id_user", context.GetPollByUser)
+	router.GET("/votes/:poll_id/:user_id", context.GetVoteByUserAndPoll)
+	router.GET("/poll/:id_poll/votes", context.GetVotesForPoll)
+
 	_ = logged_in
 	return router
 }

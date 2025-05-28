@@ -51,6 +51,17 @@ data class NotificareResponse(
     val citit: Boolean,
     val tip: String
 )
+data class VoteResponse(
+    val id_user: Int,
+    val ora: Int,
+    val data_vot: String,
+    val username: String? = null
+)
+data class PollResponse(
+    val idPoll: Int,
+    val idTrainer: Int,
+    val isActive: Boolean
+)
 
 
 interface ApiService {
@@ -105,4 +116,34 @@ interface ApiService {
 
     @POST("notificari/citit/{id_user}")
     suspend fun marcheazaNotificariCitite(@Path("id_user") userId: Int): Response<ResponseBody>
+
+    @POST("poll")
+    suspend fun createPoll(@Body body: Map<String, Int>): Response<Poll>
+
+    @POST("poll/dezactivare/{id_poll}")
+    suspend fun deactivatePoll(@Path("id_poll") pollId: Int): Response<Unit>
+
+    @GET("poll/trainer/{id_trainer}")
+    suspend fun getActivePoll(@Path("id_trainer") trainerId: Int): Response<Poll>
+
+    @POST("vote")
+    suspend fun vote(@Body vote: Map<String, Int>): Response<Vote>
+
+    @GET("poll/user/{userId}")
+    suspend fun getPollActivByUserId(@Path("userId") userId: Int): Response<Poll>
+
+    @GET("votes/{poll_id}/{user_id}")
+    suspend fun getVoteByUserAndPoll(
+        @Path("poll_id") pollId: Int,
+        @Path("user_id") userId: Int
+    ): Response<Vote>
+
+    @GET("poll/{id_poll}/votes")
+    suspend fun getVotesForPoll(@Path("id_poll") pollId: Int): Response<List<VoteResponse>>
+
+    @GET("poll/trainer/{id_trainer}")
+    suspend fun getPollForTrainer(@Path("id_trainer") trainerId: Int): Response<PollResponse>
+
+
+
 }

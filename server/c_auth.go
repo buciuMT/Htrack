@@ -34,6 +34,12 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 			"message": "User already exists",
 		})
 	}
+	res = ctx.DB.Where("USERNAME", &try)
+	if res.Error == nil {
+		c.JSON(406, gin.H{
+			"message": "User already exists",
+		})
+	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), 0)
 	if err != nil {
 		c.JSON(406, gin.H{
@@ -70,7 +76,7 @@ func (ctx *CContext) C_Login(c *gin.Context) {
 	}
 
 	var user User
-	res := ctx.DB.Where("email = ?", req.Username).First(&user)
+	res := ctx.DB.Where("username = ?", req.Username).First(&user)
 
 	fmt.Println("Error:", res.Error)
 	fmt.Printf("User: %+v\n", user)

@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,10 +22,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gym.viewmodel.UserViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import com.example.gym.model.Notificare
 import com.example.gym.viewmodel.NotificariViewModel
 import com.example.gym.viewmodel.NotificariViewModelFactory
@@ -152,6 +157,126 @@ fun NotificareItem(notificare: Notificare) {
     }
 }
 
+@Composable
+fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
+    val poll by viewModel.pollActive.collectAsState(initial = null)
+    val coroutineScope = rememberCoroutineScope()
+
+    var mesaj by remember { mutableStateOf("") }
+    var oraSelectata by remember { mutableStateOf<Int?>(null) }
+    var hasVoted by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(userId) {
+        viewModel.loadPollActiv(userId)
+    }
+
+    LaunchedEffect(poll?.id) {
+        if (poll != null) {
+            loading = true
+            hasVoted = viewModel.hasVoted(userId, poll!!.id)
+            loading = false
+        } else {
+            loading = false
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            mesaj.isNotEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = mesaj, modifier = Modifier.padding(24.dp))
+                }
+            }
+
+            poll == null || hasVoted -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Ai votat deja sau nu există niciun poll activ.",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(24.dp)
+                    )
+                }
+            }
+
+            else -> {
+                // Afișează poll-ul și butonul de vot
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxSize()
+                ) {
+                    Text("Alege o oră pentru antrenament", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    for (ora in 8..20) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { oraSelectata = ora },
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (oraSelectata == ora) Color(0xFFBBDEFB) else Color.White
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = oraSelectata == ora,
+                                    onClick = { oraSelectata = ora }
+                                )
+                                Text(
+                                    text = "Ora ${"%02d:00".format(ora)}",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            if (oraSelectata != null && poll != null) {
+                                val success = viewModel.voteaza(poll!!.id, userId, oraSelectata!!)
+                                if (success) {
+                                    mesaj = "Vot înregistrat cu succes pentru ora ${oraSelectata}:00"
+                                    hasVoted = true
+                                } else {
+                                    mesaj = "Eroare la vot."
+                                }
+                            } else {
+                                mesaj = "Te rugăm să selectezi o oră."
+                            }
+                        }
+                    },
+                    enabled = !hasVoted,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Votează", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+    }
+}
 
 
 
@@ -184,7 +309,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
         ), label = "puls_scale"
     )
 
-    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Conversații", "Deconectează-te")
+    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Programează ședința","Conversații", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -257,6 +382,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
                     "Cont" -> ContPage(viewModel)
                     "Notificari" -> NotificariPage(notificariViewModel)
                     "Istoric Abonamente" -> IstoricPage(viewModel)
+                    "Programează ședința" -> ProgramareSedintaPage(viewModel, Userid)
                     "Conversații" -> ConversatiiPage()
                 }
             }

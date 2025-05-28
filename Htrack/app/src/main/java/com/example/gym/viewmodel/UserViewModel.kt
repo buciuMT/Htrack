@@ -3,8 +3,13 @@ package com.example.gym.viewmodel
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gym.model.*
 import com.example.gym.data.RetrofitClient
+import com.example.gym.data.RetrofitClient.apiService
+import com.example.gym.model.Abonament
+import com.example.gym.model.Poll
+import com.example.gym.repository.PollRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
@@ -14,7 +19,35 @@ class UserViewModel : ViewModel() {
 
     var numarSedinte by mutableStateOf(0)
         private set
+
     val istoricAbonamente = mutableStateListOf<Abonament>()
+
+    private val _pollActive = MutableStateFlow<Poll?>(null)
+    val pollActive: StateFlow<Poll?> = _pollActive
+    private val repository = PollRepository(RetrofitClient.apiService)
+
+    fun loadPollActiv(userId: Int) {
+        viewModelScope.launch {
+            val poll = repository.getPollActivByUserId(userId)
+            _pollActive.value = poll
+        }
+    }
+
+
+    suspend fun voteaza(idPoll: Int, userId: Int, ora: Int): Boolean {
+        return try {
+            val body = mapOf(
+                "id_poll" to idPoll,
+                "id_user" to userId,
+                "ora" to ora
+            )
+            val response = apiService.vote(body)
+            response.isSuccessful
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 
     fun loadAbonamentActiv(userId: Int) {
         viewModelScope.launch {
@@ -28,6 +61,17 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+    suspend fun hasVoted(userId: Int, pollId: Int): Boolean {
+        return try {
+            val response = apiService.getVoteByUserAndPoll(pollId, userId)
+            response.isSuccessful && response.body() != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+
     fun loadIstoricAbonamente(userId: Int) {
         viewModelScope.launch {
             try {
@@ -35,8 +79,8 @@ class UserViewModel : ViewModel() {
                 istoricAbonamente.clear()
                 istoricAbonamente.addAll(list)
             } catch (e: Exception) {
+                // Poți adăuga un Log dacă vrei
             }
         }
     }
-
 }
