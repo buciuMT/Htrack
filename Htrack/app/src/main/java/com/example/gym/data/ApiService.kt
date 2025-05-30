@@ -144,6 +144,8 @@ interface ApiService {
     @GET("poll/trainer/{id_trainer}")
     suspend fun getPollForTrainer(@Path("id_trainer") trainerId: Int): Response<PollResponse>
 
+    @GET("polls/votate/{id_user}")
+    suspend fun getPollsVotate(@Path("id_user") userId: Int): List<PollVotat>
 
 
 }

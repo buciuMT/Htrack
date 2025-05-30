@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"gorm.io/gorm"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
@@ -23,10 +24,27 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 		First(&abonament).Error
 
 	if err == nil {
+		// ✅ verificăm dacă numărul de ședințe este 0
+		if abonament.NumarSedinte == 0 {
+			// Actualizăm în baza de date
+			ctx.DB.Model(&abonament).Updates(map[string]interface{}{
+				"tip_abonament": "NEACTIV",
+				"numar_sedinte": 0,
+			})
+
+			c.JSON(http.StatusOK, gin.H{
+				"tip_abonament": "NEACTIV",
+				"numar_sedinte": 0,
+			})
+			return
+		}
+
+		// Dacă are ședințe, returnăm abonamentul actual
 		c.JSON(http.StatusOK, abonament)
 		return
 	}
 
+	// Dacă nu găsește abonamente active, verificăm cele expirate și le dezactivăm
 	err = ctx.DB.
 		Model(&Abonament{}).
 		Where("id_user = ? AND data_finalizare < ? AND tip_abonament != ?", idUser, time.Now(), "NEACTIV").
@@ -34,6 +52,7 @@ func (ctx *CContext) GetAbonamentActiv(c *gin.Context) {
 			"tip_abonament": "NEACTIV",
 			"numar_sedinte": 0,
 		}).Error
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizarea abonamentelor"})
 		return
@@ -160,6 +179,7 @@ func (ctx *CContext) AddPoll(c *gin.Context) {
 	poll := Poll{
 		TrainerID: req.IDTrainer,
 		IsActive:  true,
+		Data:      time.Now(),
 	}
 
 	if err := ctx.DB.Create(&poll).Error; err != nil {
@@ -353,5 +373,28 @@ func (ctx *CContext) GetVotesForPoll(c *gin.Context) {
 
 	c.JSON(http.StatusOK, votes)
 }
+func (ctx *CContext) GetPollsVotateDeUser(c *gin.Context) {
+	idUserStr := c.Param("id_user")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID user invalid"})
+		return
+	}
 
+	var votedPolls []PollOra
 
+	err = ctx.DB.
+		Table("polls").
+		Select("polls.ID_POLL, polls.ID_TRAINER, polls.ACTIV, polls.DATA,votes.ORA").
+		Joins("JOIN votes ON polls.ID_POLL = votes.ID_POLL").
+		Where("votes.ID_USER = ?", idUser).
+		Order("polls.DATA DESC").
+		Scan(&votedPolls).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la interogare: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, votedPolls)
+}

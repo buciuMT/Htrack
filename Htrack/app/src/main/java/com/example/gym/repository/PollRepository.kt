@@ -3,6 +3,7 @@ package com.example.gym.repository
 import com.example.gym.data.ApiService
 import com.example.gym.data.VoteResponse
 import com.example.gym.model.Poll
+import com.example.gym.model.PollVotat
 
 class PollRepository(private val api: ApiService) {
     suspend fun createPoll(trainerId: Int) = api.createPoll(mapOf("id_trainer" to trainerId))
@@ -29,6 +30,9 @@ class PollRepository(private val api: ApiService) {
         }
     }
 
+    suspend fun getPollsVotateDeUser(userId: Int): List<PollVotat> {
+        return api.getPollsVotate(userId)
+    }
 
 
     suspend fun checkIfUserHasVoted(userId: Int, pollId: Int): Boolean {

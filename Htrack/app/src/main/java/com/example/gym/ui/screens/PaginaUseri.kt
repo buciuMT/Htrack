@@ -1,5 +1,4 @@
 package com.example.gym.ui.screens
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -30,7 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import com.example.gym.data.RetrofitClient
 import com.example.gym.model.Notificare
+import com.example.gym.model.PollVotat
+import com.example.gym.repository.PollRepository
 import com.example.gym.viewmodel.NotificariViewModel
 import com.example.gym.viewmodel.NotificariViewModelFactory
 import kotlinx.coroutines.delay
@@ -160,6 +162,7 @@ fun NotificareItem(notificare: Notificare) {
 @Composable
 fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
     val poll by viewModel.pollActive.collectAsState(initial = null)
+    val abonament by viewModel.abonamentActiv.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
     var mesaj by remember { mutableStateOf("") }
@@ -169,6 +172,7 @@ fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
 
     LaunchedEffect(userId) {
         viewModel.loadPollActiv(userId)
+        viewModel.loadAbonament(userId) // 🔹 încarcă abonamentul activ
     }
 
     LaunchedEffect(poll?.id) {
@@ -180,11 +184,23 @@ fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
             loading = false
         }
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             loading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
+                }
+            }
+
+            abonament == null || abonament!!.tipAbonament == "NEACTIV" || abonament!!.numarSedinte == 0 -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Nu ai abonament activ.",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(24.dp)
+                    )
                 }
             }
 
@@ -206,7 +222,7 @@ fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
             }
 
             else -> {
-                // Afișează poll-ul și butonul de vot
+                // 👉 Interfața pentru alegere oră + votare
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
@@ -279,6 +295,53 @@ fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
 }
 
 
+@Composable
+fun IstoricSedintePage(userId: Int, pollRepo: PollRepository) {
+    val scope = rememberCoroutineScope()
+    var polls by remember { mutableStateOf<List<PollVotat>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(true) {
+        scope.launch {
+            try {
+                polls = pollRepo.getPollsVotateDeUser(userId)
+            } catch (e: Exception) {
+                error = "Eroare la încărcarea pollurilor: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    Column(Modifier.padding(16.dp)) {
+        Text("Istoric ședințe", style = MaterialTheme.typography.titleLarge)
+
+        when {
+            isLoading -> CircularProgressIndicator()
+            error != null -> Text(error!!, color = Color.Red)
+            polls.isEmpty() -> Text("Nu ai votat la nicio ședință.")
+            else -> {
+                LazyColumn {
+                    items(polls) { poll ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = CardDefaults.cardElevation()
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Text("Dată: ${poll.data.substringBefore('T')}")
+                                Text("Ora selectată: ${poll.ora_selectata}")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -294,7 +357,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
         viewModel.loadAbonamentActiv(Userid)
         viewModel.loadIstoricAbonamente(Userid)
     }
-
+    val pollRepo = remember { PollRepository(RetrofitClient.apiService) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedItem by remember { mutableStateOf("Cont") }
@@ -309,7 +372,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
         ), label = "puls_scale"
     )
 
-    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Programează ședința","Conversații", "Deconectează-te")
+    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Programează ședința","Istoric Ședințe","Conversații", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -383,6 +446,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
                     "Notificari" -> NotificariPage(notificariViewModel)
                     "Istoric Abonamente" -> IstoricPage(viewModel)
                     "Programează ședința" -> ProgramareSedintaPage(viewModel, Userid)
+                    "Istoric Ședințe" -> IstoricSedintePage(Userid, pollRepo)
                     "Conversații" -> ConversatiiPage()
                 }
             }

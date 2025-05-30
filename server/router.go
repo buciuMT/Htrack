@@ -31,6 +31,7 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/poll/user/:id_user", context.GetPollByUser)
 	router.GET("/votes/:poll_id/:user_id", context.GetVoteByUserAndPoll)
 	router.GET("/poll/:id_poll/votes", context.GetVotesForPoll)
+	router.GET("/polls/votate/:id_user", context.GetPollsVotateDeUser)
 
 	_ = logged_in
 	return router

@@ -26,6 +26,18 @@ class UserViewModel : ViewModel() {
     val pollActive: StateFlow<Poll?> = _pollActive
     private val repository = PollRepository(RetrofitClient.apiService)
 
+
+    val abonamentActiv = MutableStateFlow<Abonament?>(null)
+
+    suspend fun loadAbonament(userId: Int) {
+        try {
+            val response = apiService.getAbonamentActiv(userId)
+            abonamentActiv.value = response
+        } catch (e: Exception) {
+            abonamentActiv.value = null
+        }
+    }
+
     fun loadPollActiv(userId: Int) {
         viewModelScope.launch {
             val poll = repository.getPollActivByUserId(userId)

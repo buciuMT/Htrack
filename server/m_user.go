@@ -29,10 +29,11 @@ type Notificare struct {
 	Citit        bool      `gorm:"column:CITIT" json:"citit"`
 }
 type Poll struct {
-	ID_POLL        uint   `gorm:"primaryKey;column:ID_POLL" json:"id_poll"`
-	TrainerID int    `gorm:"column:ID_TRAINER" json:"trainer_id"`
-	IsActive  bool   `gorm:"column:ACTIV" json:"is_active"`
-	Votes     []Vote `gorm:"foreignKey:IDPoll" json:"votes"`
+	ID_POLL   uint      `gorm:"primaryKey;column:ID_POLL" json:"id_poll"`
+	TrainerID int       `gorm:"column:ID_TRAINER" json:"trainer_id"`
+	IsActive  bool      `gorm:"column:ACTIV" json:"is_active"`
+	Votes     []Vote    `gorm:"foreignKey:IDPoll" json:"votes"`
+	Data      time.Time `gorm:"column:DATA" json:"data"`
 }
 
 type Vote struct {
@@ -41,6 +42,14 @@ type Vote struct {
 	IDUser  uint      `gorm:"column:ID_USER" json:"id_user"`
 	Ora     int       `gorm:"column:ORA" json:"ora"`
 	DataVot time.Time `gorm:"column:DATA_VOT" json:"data_vot"`
+}
+
+type PollOra struct {
+	ID_POLL   uint      `gorm:"column:ID_POLL" json:"id_poll"`
+	TrainerID int       `gorm:"column:ID_TRAINER" json:"trainer_id"`
+	IsActive  bool      `gorm:"column:ACTIV" json:"is_active"`
+	Data      time.Time `gorm:"column:DATA" json:"data"`
+	Ora       int       `gorm:"column:ORA" json:"ora_selectata"`
 }
 
 func (User) TableName() string {
