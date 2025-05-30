@@ -3,6 +3,7 @@ package com.example.gym.ui.screens
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -392,6 +393,10 @@ fun TrainerCreatePollPage(trainerId: Int) {
     val context = LocalContext.current
     val repo = remember { PollRepository(RetrofitClient.apiService) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedVote by remember { mutableStateOf<VoteResponse?>(null) }
+    var newHour by remember { mutableStateOf("") }
+
     var isLoading by remember { mutableStateOf(false) }
     var successMessage by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -482,8 +487,11 @@ fun TrainerCreatePollPage(trainerId: Int) {
                                     Text("Ora selectată: ${vote.ora}", style = MaterialTheme.typography.bodyMedium)
                                 }
 
-
-                                IconButton(onClick = { /* TODO: implementare viitoare */ }) {
+                                IconButton(onClick = {
+                                    selectedVote = vote
+                                    newHour = vote.ora.toString()
+                                    showDialog = true
+                                }) {
                                     Icon(Icons.Default.MoreVert, contentDescription = "Modifică ora")
                                 }
                             }
@@ -491,7 +499,6 @@ fun TrainerCreatePollPage(trainerId: Int) {
                     }
                 }
             }
-
 
             Spacer(Modifier.height(16.dp))
 
@@ -511,6 +518,81 @@ fun TrainerCreatePollPage(trainerId: Int) {
                 Text("Dezactivează Poll")
             }
         }
+
+        if (showDialog && selectedVote != null) {
+            val hours = (8..20).toList()
+            var expanded by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Modifică ora pentru ${selectedVote!!.username}") },
+                text = {
+                    Column {
+                        Text("Selectează noua oră:")
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = if (newHour.isEmpty()) "Selectează ora" else "$newHour:00",
+                                onValueChange = {},
+                                label = { Text("Ora") },
+                                readOnly = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { expanded = true }
+                            )
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                hours.forEach { hour ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            newHour = hour.toString()
+                                            expanded = false
+                                        },
+                                        text = { Text("$hour:00") }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val hour = newHour.toIntOrNull()
+                        if (hour != null && activePoll != null) {
+                            scope.launch {
+                                val success = repo.updateVoteHour(
+                                    pollId = activePoll!!.id,
+                                    userId = selectedVote!!.id_user,
+                                    hour = hour
+                                )
+                                if (success) {
+                                    successMessage = "Ora a fost actualizată"
+                                    errorMessage = null
+                                    loadPollAndVotes()
+                                } else {
+                                    errorMessage = "Eroare la actualizare oră"
+                                }
+                                showDialog = false
+                            }
+                        }
+                    }) {
+                        Text("Salvează")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Anulează")
+                    }
+                }
+            )
+        }
+
+
     }
 }
+
 

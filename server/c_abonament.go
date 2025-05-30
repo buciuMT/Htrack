@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -397,4 +397,38 @@ func (ctx *CContext) GetPollsVotateDeUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, votedPolls)
+}
+func (ctx *CContext) UpdateVoteHour(c *gin.Context) {
+	var req UpdateVoteRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Date invalide"})
+		return
+	}
+	result := ctx.DB.Model(&Vote{}).
+		Where("id_poll = ? AND id_user = ?", req.IdPoll, req.IdUser).
+		Update("ora", req.Ora)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la actualizarea orei"})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Votul nu a fost găsit"})
+		return
+	}
+
+	notificare := Notificare{
+		IDUser: req.IdUser,
+		Tip:    "MODIFICARE_ORA",
+		Mesaj:  fmt.Sprintf("Ora ta a fost modificată la %d:00.", req.Ora),
+		Data:   time.Now(),
+		Citit:  false,
+	}
+
+	if err := ctx.DB.Create(&notificare).Error; err != nil {
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Ora actualizată și notificare trimisă"})
 }

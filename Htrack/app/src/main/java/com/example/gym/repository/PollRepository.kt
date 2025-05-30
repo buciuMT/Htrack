@@ -43,5 +43,17 @@ class PollRepository(private val api: ApiService) {
         val response = api.getPollActivByUserId(userId)
         return if (response.isSuccessful) response.body() else null
     }
+    suspend fun updateVoteHour(pollId: Int, userId: Int, hour: Int): Boolean {
+        return try {
+            val response = api.updateVoteHour(mapOf(
+                "id_poll" to pollId,
+                "id_user" to userId,
+                "ora" to hour
+            ))
+            response.isSuccessful
+        } catch (e: Exception) {
+            false
+        }
+    }
 
 }

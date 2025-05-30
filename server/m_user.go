@@ -52,6 +52,13 @@ type PollOra struct {
 	Ora       int       `gorm:"column:ORA" json:"ora_selectata"`
 }
 
+type UpdateVoteRequest struct {
+	IdPoll int `json:"id_poll"`
+	IdUser int `json:"id_user"`
+	Ora    int `json:"ora"`
+}
+
+
 func (User) TableName() string {
 	return "users"
 }

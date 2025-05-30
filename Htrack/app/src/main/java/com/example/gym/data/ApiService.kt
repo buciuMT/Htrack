@@ -147,5 +147,7 @@ interface ApiService {
     @GET("polls/votate/{id_user}")
     suspend fun getPollsVotate(@Path("id_user") userId: Int): List<PollVotat>
 
+    @POST("vote/update")
+    suspend fun updateVoteHour(@Body body: Map<String, Int>): Response<Unit>
 
 }
