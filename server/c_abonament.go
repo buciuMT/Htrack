@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
+	"log"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -439,8 +439,7 @@ type StartChatRequest struct {
 	IDTrainer uint `json:"id_trainer"`
 }
 
-// START CHAT dacă nu există
-// Design Pattern: COMMAND (inițializare conversație ca acțiune)
+
 func (ctx *CContext) StartChat(c *gin.Context) {
 	var req struct {
 		IdUser    int `json:"id_user"`
@@ -531,6 +530,7 @@ func RegisterObserver(o MessageObserver) {
 
 func NotifyObservers(msg Message) {
 	for _, o := range observers {
+		fmt.Println("NotifyObservers called")
 		o.OnMessageSent(msg)
 	}
 }
@@ -626,4 +626,48 @@ func (ctx *CContext) GetConversationsForUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, conversatii)
+}
+func SaveNotificare(db *gorm.DB, idUser int, mesaj string, tip string) error {
+	notif := Notificare{
+		IDUser: idUser,
+		Mesaj:  mesaj,
+		Tip:    tip,
+		Data:   time.Now(),
+		Citit:  false,
+	}
+	return db.Create(&notif).Error
+}
+type NotificationSaver struct {
+	DB *gorm.DB
+}
+
+func (n NotificationSaver) OnMessageSent(msg Message) {
+	var conv struct {
+		IDUser    int
+		IDTrainer int
+	}
+
+	// Caută participanții la conversație
+	err := n.DB.Table("conversations").
+		Select("id_user, id_trainer").
+		Where("id_conversation = ?", msg.IDConversation).
+		Scan(&conv).Error
+
+	if err != nil {
+		log.Printf("Eroare la extragerea conversației: %v", err)
+		return
+	}
+
+	var idReceiver int
+	if msg.IDSender == conv.IDTrainer {
+		idReceiver = conv.IDUser
+	} else {
+		idReceiver = conv.IDTrainer
+	}
+
+	// Salvează notificarea pentru destinatar
+	err = SaveNotificare(n.DB, idReceiver, "Ai un mesaj nou", "chat")
+	if err != nil {
+		log.Printf("Eroare la salvarea notificării în observer: %v", err)
+	}
 }
