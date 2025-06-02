@@ -3,6 +3,7 @@ package com.example.gym.viewmodel
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gym.data.ApiService.TrainerResponse
 import com.example.gym.data.RetrofitClient
 import com.example.gym.data.RetrofitClient.apiService
 import com.example.gym.model.Abonament
@@ -46,6 +47,7 @@ class UserViewModel : ViewModel() {
     }
 
 
+
     suspend fun voteaza(idPoll: Int, userId: Int, ora: Int): Boolean {
         return try {
             val body = mapOf(
@@ -59,7 +61,6 @@ class UserViewModel : ViewModel() {
             false
         }
     }
-
 
     fun loadAbonamentActiv(userId: Int) {
         viewModelScope.launch {
@@ -79,6 +80,21 @@ class UserViewModel : ViewModel() {
             response.isSuccessful && response.body() != null
         } catch (e: Exception) {
             false
+        }
+    }
+
+    var antrenorId by mutableStateOf<Int?>(null)
+        private set
+
+    fun loadAntrenorId(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.apiService.getAntrenorId(userId)
+                antrenorId = response.id_trainer
+            } catch (e: Exception) {
+                // Log error sau tratează fallback
+                antrenorId = null
+            }
         }
     }
 

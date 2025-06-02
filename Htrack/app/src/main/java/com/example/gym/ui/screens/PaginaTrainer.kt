@@ -3,6 +3,7 @@ package com.example.gym.ui.screens
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gym.data.AbonamentAction
 import com.example.gym.data.AbonamentRequest
 import com.example.gym.data.DezactivareRequest
@@ -31,6 +33,7 @@ import com.example.gym.data.NotificareRequest
 import com.example.gym.data.PollResponse
 import com.example.gym.data.VoteResponse
 import com.example.gym.repository.PollRepository
+import com.example.gym.viewmodel.TrainerChatViewModel
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -43,7 +46,7 @@ fun TrainerHomeScreen(navController: NavController, username: String, trainerId:
     val scope = rememberCoroutineScope()
 
     var selectedItem by remember { mutableStateOf("Cont") }
-    val items = listOf("Cont", "Useri", "Adaugă Poll", "Deconectează-te")
+    val items = listOf("Cont", "Useri", "Adaugă Poll","Conversații", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -104,12 +107,105 @@ fun TrainerHomeScreen(navController: NavController, username: String, trainerId:
                     "Cont" -> TrainerContPage(username, trainerId)
                     "Useri" -> TrainerUserListPage(trainerId = trainerId)
                     "Adaugă Poll" -> TrainerCreatePollPage(trainerId)
+                    "Conversații" -> TrainerConversationsPage(trainerId)
                 }
             }
         }
     }
 }
+@Composable
+fun TrainerConversationsPage(trainerId: Int, viewModel: TrainerChatViewModel = viewModel()) {
+    val scope = rememberCoroutineScope()
+    var selectedUserId by remember { mutableStateOf<Int?>(null) }
+    var mesaj by remember { mutableStateOf("") }
 
+    LaunchedEffect(trainerId) {
+        viewModel.loadUsersForTrainer(trainerId)
+    }
+
+    if (selectedUserId == null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text("Selectează un utilizator pentru a începe conversația", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(viewModel.userList) { user ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                selectedUserId = user.id_user
+                                scope.launch {
+                                    viewModel.startChat(user.id_user, trainerId)
+                                }
+                            },
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(text = user.username ?: "User: ${user.username}", style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+            Button(onClick = { selectedUserId = null }) {
+                Text("Înapoi la lista de utilizatori")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                reverseLayout = true
+            ) {
+                items(viewModel.messages.reversed()) { msg ->
+                    val isTrainer = msg.id_sender == trainerId
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(4.dp),
+                        horizontalArrangement = if (isTrainer) Arrangement.End else Arrangement.Start
+                    ) {
+                        Text(
+                            text = msg.mesaj,
+                            color = Color.White,
+                            modifier = Modifier
+                                .background(
+                                    if (isTrainer) Color(0xFF4CAF50) else Color(0xFF2196F3),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(8.dp)
+                        )
+                    }
+                }
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextField(
+                    value = mesaj,
+                    onValueChange = { mesaj = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Trimite mesaj...") }
+                )
+                Button(onClick = {
+                    scope.launch {
+                        if (mesaj.isNotBlank()) {
+                            viewModel.sendMessage(trainerId, mesaj)
+                            mesaj = ""
+                        }
+                    }
+                }) {
+                    Text("Trimite")
+                }
+            }
+        }
+    }
+}
 @Composable
 fun TrainerContPage(username: String, id: Int) {
     Column(modifier = Modifier.padding(16.dp)) {

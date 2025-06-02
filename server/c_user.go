@@ -172,3 +172,62 @@ func (ctx *CContext) MarcheazaNotificariCitite(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Toate notificările au fost marcate ca citite"})
 }
+func (ctx *CContext) GetTrainerForUser(c *gin.Context) {
+	idUserStr := c.Param("id_user")
+	idUser, err := strconv.Atoi(idUserStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalid"})
+		return
+	}
+
+	var idTrainer *int
+	err = ctx.DB.
+		Table("users").
+		Select("antrenor_id").
+		Where("id_user = ?", idUser).
+		Limit(1).
+		Scan(&idTrainer).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":       "Eroare DB",
+			"description": err.Error(),
+		})
+		return
+	}
+
+	if idTrainer == nil {
+		c.JSON(http.StatusOK, gin.H{"antrenor_id": nil})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"antrenor_id": *idTrainer})
+	}
+}
+
+func (ctx *CContext) GetUsersForTrainer(c *gin.Context) {
+	trainerIdStr := c.Param("trainerId")
+	trainerId, err := strconv.Atoi(trainerIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalid"})
+		return
+	}
+
+	var users []struct {
+		IDUser   int    `json:"id_user"`
+		Username string `json:"username"`
+	}
+
+	err = ctx.DB.
+		Table("users").
+		Select("id_user, username").
+		Where("antrenor_id = ?", trainerId).
+		Scan(&users).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Eroare la interogare"})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+

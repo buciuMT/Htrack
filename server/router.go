@@ -33,6 +33,14 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/poll/:id_poll/votes", context.GetVotesForPoll)
 	router.GET("/polls/votate/:id_user", context.GetPollsVotateDeUser)
 	router.POST("/vote/update", context.UpdateVoteHour)
+	router.POST("/chat/start", context.StartChat)
+	router.POST("/messages", context.SendMessage)
+	router.POST("/conversations/:id_conversation/users/:id_user/mark-seen", context.MarcareMesajeVazute)
+	router.GET("/messages/:id_conversation", context.GetMessagesForConversation)
+	router.POST("/messages/seen", context.MarkMessagesAsSeen)
+	router.GET("/conversations/user/:id_user", context.GetConversationsForUser)
+	router.GET("/users/:id_user/trainer", context.GetTrainerForUser)
+	router.GET("/trainer/users/:trainerId", context.GetUsersForTrainer)
 
 	_ = logged_in
 	return router

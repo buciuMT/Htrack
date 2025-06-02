@@ -1,10 +1,15 @@
 package com.example.gym.ui.screens
+import android.net.http.HttpException
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresExtension
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
@@ -24,7 +29,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -33,6 +37,7 @@ import com.example.gym.data.RetrofitClient
 import com.example.gym.model.Notificare
 import com.example.gym.model.PollVotat
 import com.example.gym.repository.PollRepository
+import com.example.gym.viewmodel.ChatViewModel
 import com.example.gym.viewmodel.NotificariViewModel
 import com.example.gym.viewmodel.NotificariViewModelFactory
 import kotlinx.coroutines.delay
@@ -97,12 +102,104 @@ fun IstoricPage(viewModel: UserViewModel = viewModel()) {
 
 
 
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
-fun ConversatiiPage() {
-    Column(Modifier.padding(16.dp)) {
-        Text("Pagina de conversații")
+fun ConversatiiPage(userId: Int, viewModel: ChatViewModel = viewModel()) {
+    val scope = rememberCoroutineScope()
+    var mesaj by remember { mutableStateOf("") }
+    LaunchedEffect(userId) {
+        viewModel.loadAntrenorId(userId)
     }
+    // Antrenor ID-ul din ViewModel
+    val antrenorId = viewModel.antrenorId
+    val conversationId = viewModel.conversationId
+
+
+
+    // Pornește conversația doar după ce avem antrenorId valid
+    LaunchedEffect(antrenorId) {
+        antrenorId?.let { trainerId ->
+            try {
+                Log.d("ConversatiiPage", "Apel startChat cu userId=$userId, trainerId=$antrenorId")
+
+                val idConv = viewModel.startChat(userId, trainerId)
+                viewModel.loadMessages(idConv)
+            } catch (e: HttpException) {
+                Log.e("ConversatiiPage", "Eroare la startChat: ${e.message}")
+                // Afișează un mesaj de eroare utilizatorului sau ia alte măsuri adecvate
+            } catch (e: Exception) {
+                Log.e("ConversatiiPage", "Eroare necunoscută: ${e.message}")
+            }
+        }
+    }
+
+
+    if (conversationId != null) {
+        Column(Modifier.fillMaxSize().padding(16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 8.dp),
+                reverseLayout = true
+            ) {
+                items(viewModel.messages.reversed()) { msg ->
+                    val isUser = msg.id_sender == userId
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+                    ) {
+                        Text(
+                            text = msg.mesaj,
+                            color = Color.White,
+                            modifier = Modifier
+                                .background(
+                                    if (isUser) Color(0xFF4CAF50) else Color(0xFF2196F3),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(8.dp)
+                        )
+                    }
+                }
+            }
+
+
+            Row {
+                TextField(
+                    value = mesaj,
+                    onValueChange = { mesaj = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Scrie un mesaj...") }
+                )
+                Button(onClick = {
+                    scope.launch {
+                        if (mesaj.isNotBlank()) {
+                            viewModel.sendMessage(userId, mesaj)
+                            mesaj = ""
+                        }
+                    }
+                }) {
+                    Text("Trimite")
+                }
+            }
+
+        }
+    }else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Nu ai un antrenor atribuit", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+
 }
+
+
+
+
 @Composable
 fun NotificariPage(viewModel: NotificariViewModel) {
     val notificari by viewModel.notificari.collectAsState()
@@ -172,7 +269,7 @@ fun ProgramareSedintaPage(viewModel: UserViewModel, userId: Int) {
 
     LaunchedEffect(userId) {
         viewModel.loadPollActiv(userId)
-        viewModel.loadAbonament(userId) // 🔹 încarcă abonamentul activ
+        viewModel.loadAbonament(userId)
     }
 
     LaunchedEffect(poll?.id) {
@@ -343,6 +440,7 @@ fun IstoricSedintePage(userId: Int, pollRepo: PollRepository) {
 }
 
 
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserHomeScreen(navController: NavController, Userid: Int) {
@@ -356,6 +454,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
     LaunchedEffect(Userid) {
         viewModel.loadAbonamentActiv(Userid)
         viewModel.loadIstoricAbonamente(Userid)
+        viewModel.loadAntrenorId(Userid)
     }
     val pollRepo = remember { PollRepository(RetrofitClient.apiService) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -447,7 +546,8 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
                     "Istoric Abonamente" -> IstoricPage(viewModel)
                     "Programează ședința" -> ProgramareSedintaPage(viewModel, Userid)
                     "Istoric Ședințe" -> IstoricSedintePage(Userid, pollRepo)
-                    "Conversații" -> ConversatiiPage()
+                    "Conversații" -> ConversatiiPage(userId = Userid)
+
                 }
             }
         }

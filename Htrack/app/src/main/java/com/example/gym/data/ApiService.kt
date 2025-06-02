@@ -63,6 +63,13 @@ data class PollResponse(
     val isActive: Boolean
 )
 
+data class StartChatRequest(
+    @SerializedName("id_user")
+    val id_user: Int,
+
+    @SerializedName("id_trainer")
+    val id_trainer: Int
+)
 
 interface ApiService {
     @POST("login")
@@ -149,5 +156,30 @@ interface ApiService {
 
     @POST("vote/update")
     suspend fun updateVoteHour(@Body body: Map<String, Int>): Response<Unit>
+
+    @GET("conversations/user/{id_user}")
+    suspend fun getUserConversations(@Path("id_user") userId: Int): List<Conversatie>
+
+    @GET("users/{id_user}/trainer")
+    suspend fun getAntrenorId(@Path("id_user") userId: Int): TrainerResponse
+
+    data class TrainerResponse(
+        @SerializedName("antrenor_id")
+        val id_trainer: Int
+    )
+
+    @POST("chat/start")
+    suspend fun startChat(@Body req: StartChatRequest): StartChatResponse
+
+    @GET("messages/{id_conversation}")
+    suspend fun getMessages(@Path("id_conversation") convId: Int): List<MessageDto>
+
+    @POST("messages")
+    suspend fun sendMessage(@Body req: SendMessageRequest)
+
+    @GET("trainer/users/{trainerId}")
+    suspend fun getUsersForTrainer(
+        @Path("trainerId") trainerId: Int
+    ): List<User>
 
 }

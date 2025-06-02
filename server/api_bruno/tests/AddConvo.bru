@@ -1,17 +1,18 @@
 meta {
-  name: AddPoll
+  name: AddConvo
   type: http
-  seq: 18
+  seq: 21
 }
 
 post {
-  url: http://localhost:8000/poll
+  url: http://localhost:8000/chat/start
   body: json
   auth: inherit
 }
 
 body:json {
   {
+    "id_user": 4,
     "id_trainer": 5
   }
   

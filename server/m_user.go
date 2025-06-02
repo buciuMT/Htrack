@@ -58,6 +58,42 @@ type UpdateVoteRequest struct {
 	Ora    int `json:"ora"`
 }
 
+type Conversation struct {
+	IDConversation int       `gorm:"column:ID_CONVERSATION;primaryKey" json:"id_conversation"`
+	IDUser         int       `gorm:"column:ID_USER" json:"id_user"`
+	IDTrainer      int       `gorm:"column:ID_TRAINER" json:"id_trainer"`
+	DataStart      time.Time `gorm:"column:DATA_START" json:"data_start"`
+
+	User    User `gorm:"foreignKey:IDUser" json:"-"`
+	Trainer User `gorm:"foreignKey:IDTrainer" json:"-"`
+}
+
+type Message struct {
+	IDMessage      int       `gorm:"column:ID_MESSAGE;primaryKey" json:"id_message"`
+	IDConversation int       `gorm:"column:ID_CONVERSATION" json:"id_conversation"`
+	IDSender       int       `gorm:"column:ID_SENDER" json:"id_sender"`
+	Mesaj          string    `gorm:"column:MESAJ" json:"mesaj"`
+	Timestamp      time.Time `gorm:"column:TIMESTAMP" json:"timestamp"`
+	Vazut          bool      `gorm:"column:VAZUT" json:"vazut"`
+
+	Sender       User         `gorm:"foreignKey:IDSender" json:"-"`
+	Conversation Conversation `gorm:"foreignKey:IDConversation" json:"-"`
+}
+
+type SendMessageRequest struct {
+	IDConversation int    `json:"id_conversation"`
+	IDSender       int    `json:"id_sender"`
+	Mesaj          string `json:"mesaj"`
+}
+
+type MessageResponse struct {
+	IDMessage  int       `json:"id_message"`
+	IDSender   int       `json:"id_sender"`
+	Username   string    `json:"username"`
+	Mesaj      string    `json:"mesaj"`
+	Timestamp  time.Time `json:"timestamp"`
+	Vazut      bool      `json:"vazut"`
+}
 
 func (User) TableName() string {
 	return "users"
