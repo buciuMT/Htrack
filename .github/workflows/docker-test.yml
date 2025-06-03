@@ -37,7 +37,7 @@ jobs:
           done
 
       - name: Run API tests
-        run: ./server/tests/test.sh
+        run: sh ./server/tests/test.sh
 
       - name: Show logs if failure
         if: failure()
