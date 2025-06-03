@@ -8,3 +8,6 @@ Cerințele din barem sunt descrise în **[wiki](https://github.com/buciuMT/Htrac
   - **[Buciu Theodor](https://github.com/buciuMT)**
   - **[Dumitrescu David](https://github.com/Backspace44)**
   - **[Iordache Mihai](https://github.com/mihaiird14)**
+    
+## Descrierea Proiectului
+Proiectul este o aplicație Android care permite gestionarea eficientă a abonamentelor la sală. Utilizatorii pot să iși creeze cont, iar adminul aplicației poate să îi atribuie unui trainer. Trainerul are posibilitatea de a programa ședințe de antrenament, de a gestiona abonamentele studenților săi, dar și de a comunica cu ei în mod direct.
