@@ -16,6 +16,8 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Set up env
+        run: cd server&&cp .env.dev .env
 
       - name: Start services with Docker Compose
         run: cd server&&docker compose up -d --build
@@ -25,7 +27,7 @@ jobs:
           echo "Waiting for services to be healthy..."
           cd server&&docker compose ps
           for i in {1..30}; do
-            unhealthy=$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose ps -q) | grep -v healthy || true)
+            unhealthy=$(docker inspect --format='{{.State.Health.Status}}' $(docker compose ps -q) | grep -v healthy || true)
             if [ -z "$unhealthy" ]; then
               echo "All services are healthy"
               break
