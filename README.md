@@ -11,3 +11,8 @@ Cerințele din barem sunt descrise în **[wiki](https://github.com/buciuMT/Htrac
     
 ## Descrierea Proiectului
 Proiectul este o aplicație Android care permite gestionarea eficientă a abonamentelor la sală. Utilizatorii pot să iși creeze cont, iar adminul aplicației poate să îi atribuie unui trainer. Trainerul are posibilitatea de a programa ședințe de antrenament, de a gestiona abonamentele studenților săi, dar și de a comunica cu ei în mod direct.
+## Documentarea folosirii tool-urilor AI - Extrase din eseu
+- Generarea interfeței de utilizator pe baza unei machete vizuale
+- Generarea criteriilor de acceptare pentru user stories
+- Propunerea de design patterns aplicabile
+- Diagnosticarea și rezolvarea erorilor tehnice
