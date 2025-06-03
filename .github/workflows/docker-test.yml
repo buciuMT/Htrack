@@ -18,12 +18,12 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Start services with Docker Compose
-        run: docker-compose up -d --build
+        run: cd server&&docker compose up -d --build
 
       - name: Wait for services to be healthy
         run: |
           echo "Waiting for services to be healthy..."
-          docker-compose ps
+          cd server&&docker compose ps
           for i in {1..30}; do
             unhealthy=$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose ps -q) | grep -v healthy || true)
             if [ -z "$unhealthy" ]; then
