@@ -37,8 +37,8 @@ jobs:
           done
 
       - name: Run API tests
-        run: ./tests/test_apis.sh
+        run: ./server/tests/test.sh
 
       - name: Show logs if failure
         if: failure()
-        run: docker compose logs
+        run: cd server&&docker compose logs
