@@ -28,17 +28,19 @@ func (ctx *CContext) C_Register(c *gin.Context) {
 		return
 	}
 	var try User
-	res := ctx.DB.Where("EMAIL", &try)
+	res := ctx.DB.Where("EMAIL = ? ", req.Email).First(&try)
 	if res.Error == nil {
 		c.JSON(406, gin.H{
 			"message": "User already exists",
 		})
+		return
 	}
-	res = ctx.DB.Where("USERNAME", &try)
+	res = ctx.DB.Where("USERNAME = ? ", req.Username).First(&try)
 	if res.Error == nil {
 		c.JSON(406, gin.H{
 			"message": "User already exists",
 		})
+		return
 	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), 0)
 	if err != nil {
