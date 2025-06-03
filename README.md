@@ -3,5 +3,5 @@ Proiect realizat pentru disciplina "Metode de dezvoltare software" din cadrul Fa
 
 ## Membrii Echipei
   - **[Buciu Theodor](https://github.com/buciuMT)**
-  - Dumitrescu David
-  - Iordache Mihai
+  - **[Dumitrescu David](https://github.com/Backspace44)**
+  - **[Iordache Mihai](https://github.com/mihaiird14)**
