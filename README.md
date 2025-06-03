@@ -1,5 +1,5 @@
 # HTrack
-![Captură_de_ecran_2025-06-03_102416-removebg-preview](https://github.com/user-attachments/assets/0d0d79bd-4136-4635-b71b-ec19bae38034)
+![7762177e-0196-4c26-8b98-d01f77092e4e (1)](https://github.com/user-attachments/assets/ff7b30d5-304c-4379-9544-b16969887c18)
 
 Proiect realizat pentru disciplina "Metode de dezvoltare software" din cadrul Facultății de Matematică și Informatică, Universitatea București.
 Cerințele din barem sunt descrise în **[wiki](https://github.com/buciuMT/Htrack.wiki.git)**
