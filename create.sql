@@ -78,3 +78,25 @@ CREATE TABLE messages (
 );
 ALTER TABLE messages
 ADD COLUMN VAZUT BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE TABLE ALIMENT (
+    id_aliment INT PRIMARY KEY,
+    nume TEXT,
+    calorii FLOAT,
+    proteine FLOAT,
+    carbohidrati FLOAT,
+    zaharuri FLOAT,
+    grasimi_saturate FLOAT,
+    grasimi_nesaturate FLOAT,
+    fibre FLOAT
+);
+CREATE TABLE jurnal_alimentar (
+    ID_JURNAL_ALIMENTAR INT PRIMARY KEY AUTO_INCREMENT, -- Or SERIAL for PostgreSQL, etc.
+    ID_USER INT NOT NULL,
+    ID_ALIMENT INT NOT NULL,
+    TIP_MASA VARCHAR(50) NOT NULL,
+    CANTITATE INT NOT NULL,
+    DATA_ADAUGARE DATE NOT NULL,
+    -- Foreign key constraints
+    FOREIGN KEY (ID_USER) REFERENCES users(ID_USER), -- Assuming your users table is named 'users' and has an ID_USER primary key
+    FOREIGN KEY (ID_ALIMENT) REFERENCES aliment(ID_ALIMENT)
+);

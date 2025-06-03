@@ -87,14 +87,42 @@ type SendMessageRequest struct {
 }
 
 type MessageResponse struct {
-	IDMessage  int       `json:"id_message"`
-	IDSender   int       `json:"id_sender"`
-	Username   string    `json:"username"`
-	Mesaj      string    `json:"mesaj"`
-	Timestamp  time.Time `json:"timestamp"`
-	Vazut      bool      `json:"vazut"`
+	IDMessage int       `json:"id_message"`
+	IDSender  int       `json:"id_sender"`
+	Username  string    `json:"username"`
+	Mesaj     string    `json:"mesaj"`
+	Timestamp time.Time `json:"timestamp"`
+	Vazut     bool      `json:"vazut"`
 }
 
+type Aliment struct {
+	ID_Aliment         int     `gorm:"primaryKey;column:id_aliment"`
+	Nume               string  `gorm:"column:nume"`
+	Calorii            float64 `gorm:"column:calorii"`
+	Proteine           float64 `gorm:"column:proteine"`
+	Carbohidrati       float64 `gorm:"column:carbohidrati"`
+	Zaharuri           float64 `gorm:"column:zaharuri"`
+	Grasimi_Saturate   float64 `gorm:"column:grasimi_saturate"`
+	Grasimi_Nesaturate float64 `gorm:"column:grasimi_nesaturate"`
+	Fibre              float64 `gorm:"column:fibre"`
+}
+type JurnalAlimentar struct {
+	IDJurnalAlimentar int       `gorm:"column:ID_JURNAL_ALIMENTAR;primaryKey" json:"id_jurnal_alimentar"`
+	IDUser            int       `gorm:"column:ID_USER" json:"id_user"`
+	IDAliment         int       `gorm:"column:ID_ALIMENT" json:"id_aliment"`
+	TipMasa           string    `gorm:"column:TIP_MASA" json:"tip_masa"`
+	Cantitate         int       `gorm:"column:CANTITATE" json:"cantitate"`
+	DataAdaugare      time.Time `gorm:"column:DATA_ADAUGARE" json:"data_adaugare"`
+
+	Aliment Aliment `gorm:"foreignKey:IDAliment" json:"aliment"`
+}
+
+func (JurnalAlimentar) TableName() string {
+	return "jurnal_alimentar"
+}
+func (Aliment) TableName() string {
+	return "aliment"
+}
 func (User) TableName() string {
 	return "users"
 }

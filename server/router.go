@@ -41,7 +41,11 @@ func ConfigRouter(context *CContext) *gin.Engine {
 	router.GET("/conversations/user/:id_user", context.GetConversationsForUser)
 	router.GET("/users/:id_user/trainer", context.GetTrainerForUser)
 	router.GET("/trainer/users/:trainerId", context.GetUsersForTrainer)
-
+	router.GET("/alimente/search", context.SearchAlimente)
+	router.POST("/jurnal-alimentar/add", context.AddAlimentToJournal)
+	router.POST("/jurnal-alimentar/remove", context.RemoveAlimentFromJournal)
+	router.GET("/jurnal-alimentar/:id_user/:date/:tip_masa", context.GetJournalEntriesByDateAndMeal)
+	router.GET("/jurnal-alimentar/calorii/:id_user/:date", context.GetDailyCalories)
 	_ = logged_in
 	return router
 }

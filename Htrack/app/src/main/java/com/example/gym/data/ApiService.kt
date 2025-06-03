@@ -70,7 +70,22 @@ data class StartChatRequest(
     @SerializedName("id_trainer")
     val id_trainer: Int
 )
+data class AddAlimentRequest(
+    val id_user: Int,
+    val id_aliment: Int,
+    val tip_masa: String,
+    val cantitate: Int,
+    val data: String
+)
 
+data class RemoveAlimentRequest(
+    val id_jurnal_alimentar: Int
+)
+
+data class CaloriesResponse(
+    @SerializedName("total_calorii")
+    val total_calorii: Double
+)
 interface ApiService {
     @POST("login")
     fun login(@Body request: LoginRequest): Call<LoginResponse>
@@ -182,4 +197,25 @@ interface ApiService {
         @Path("trainerId") trainerId: Int
     ): List<User>
 
+    @GET("/alimente/search")
+    suspend fun searchAlimente(@Query("query") query: String): List<Aliment>
+
+    @POST("/jurnal-alimentar/add")
+    suspend fun addAlimentToJournal(@Body request: AddAlimentRequest): Response<Unit>
+
+    @POST("/jurnal-alimentar/remove")
+    suspend fun removeAlimentFromJournal(@Body request: RemoveAlimentRequest): Response<Unit>
+
+    @GET("/jurnal-alimentar/{id_user}/{date}/{tip_masa}") // Corectez numele parametrilor Path
+    suspend fun getJournalEntriesByDateAndMeal(
+        @Path("id_user") userId: Int,
+        @Path("date") date: String,
+        @Path("tip_masa") tipMasa: String
+    ): List<JurnalAlimentarEntry>
+
+    @GET("/jurnal-alimentar/calorii/{id_user}/{date}") // Corectez numele parametrilor Path
+    suspend fun getDailyCalories(
+        @Path("id_user") userId: Int,
+        @Path("date") date: String
+    ): CaloriesResponse
 }
