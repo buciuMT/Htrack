@@ -25,4 +25,4 @@ jobs:
       run: cd ./server/&&go build
 
     - name: Test
-      run: cd ./server/&&go test
+      run: cd ./server/&&go test *.go

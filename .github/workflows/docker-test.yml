@@ -1,0 +1,44 @@
+name: Test APIs with Docker Compose
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Set up env
+        run: cd server&&cp .env.dev .env
+
+      - name: Start services with Docker Compose
+        run: cd server&&docker compose up -d --build
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to be healthy..."
+          cd server&&docker compose ps
+          for i in {1..30}; do
+            unhealthy=$(docker inspect --format='{{.State.Health.Status}}' $(docker compose ps -q) | grep -v healthy || true)
+            if [ -z "$unhealthy" ]; then
+              echo "All services are healthy"
+              break
+            fi
+            echo "Waiting... ($i)"
+            sleep 5
+          done
+
+      - name: Run API tests
+        run: sh ./server/tests/test.sh
+
+      - name: Show logs if failure
+        if: failure()
+        run: cd server&&docker compose logs
