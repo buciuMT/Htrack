@@ -471,7 +471,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
         ), label = "puls_scale"
     )
 
-    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Programează ședința","Istoric Ședințe","Conversații", "Jurnal Alimentar","Deconectează-te")
+    val items = listOf("Cont", "Notificari", "Istoric Abonamente", "Programează ședința","Istoric Ședințe","Conversații","Jurnal Alimentar", "Deconectează-te")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -547,7 +547,7 @@ fun UserHomeScreen(navController: NavController, Userid: Int) {
                     "Programează ședința" -> ProgramareSedintaPage(viewModel, Userid)
                     "Istoric Ședințe" -> IstoricSedintePage(Userid, pollRepo)
                     "Conversații" -> ConversatiiPage(userId = Userid)
-                    "Jurnal Alimentar" -> FoodJournalScreen(userId = Userid, navController = navController)
+                    "Jurnal Alimentar"->FoodJournalScreen(userId=Userid,navController=navController)
                 }
             }
         }
