@@ -13,7 +13,7 @@ Cerințele din barem sunt descrise în **[wiki](https://github.com/buciuMT/Htrac
 Proiectul este o aplicație Android care permite gestionarea eficientă a abonamentelor la sală. Utilizatorii pot să iși creeze cont, iar adminul aplicației poate să îi atribuie unui trainer. Trainerul are posibilitatea de a programa ședințe de antrenament, de a gestiona abonamentele studenților săi, dar și de a comunica cu ei în mod direct.
 
 ## Demo
-[![Watch the video](https://img.freepik.com/premium-vector/demo-video-icon-set-demo-video-room-conference-board-vector-symbol-black-filled-outlined-style-business-product-demo-video-website-sign_268104-2390.jpg)](https://youtu.be/CKOtKKqqJC4)
+Demo: https://youtu.be/CKOtKKqqJC4
 
 ## Diagrame UML (Realizate folosind PlantUML)
 
