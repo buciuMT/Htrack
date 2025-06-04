@@ -18,8 +18,8 @@ Demo: https://youtu.be/CKOtKKqqJC4
 ## Diagrame UML (Realizate folosind PlantUML)
 
 ![Gym Project - Arhitectura Generală](https://github.com/user-attachments/assets/18077b77-2f91-4251-8625-e0dd3439d785)
+![Gym Project - Database Schema (Conceptual  amp; Simplified)](https://github.com/user-attachments/assets/5d393a73-04e0-483a-a2b1-4f311b391e97)
 ![Gym Project - System Architecture](https://github.com/user-attachments/assets/63056599-7824-4628-ab5f-500a9421af13)
-![Gym Project - System Architecture](https://github.com/user-attachments/assets/b3149e9f-6a0e-4fb6-8425-cf682517a1f4)
 ![Gym Project - User Access Flow](https://github.com/user-attachments/assets/30a1eae1-5a18-4fd2-88b9-e21e7c595f8b)
 
 
