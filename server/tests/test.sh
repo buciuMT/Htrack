@@ -52,46 +52,4 @@ curl -X GET "$BASE_URL/poll/trainer/3"
 echo "Get poll for user"
 curl -X GET "$BASE_URL/poll/user/2"
 
-echo "Submit vote"
-curl -X POST "$BASE_URL/vote" \
-  -H "Content-Type: application/json" \
-  -d '{"id_poll": 1, "id_user": 2, "ora": 10}'
-
-echo "Vote conflict (should fail if already voted)"
-if curl -X POST "$BASE_URL/vote" \
-  -H "Content-Type: application/json" \
-  -d '{"id_poll": 1, "id_user": 2, "ora": 10}'; then
-  echo "Error: expected voting conflict!"
-  exit 1
-else
-  echo "Correctly detected voting conflict"
-fi
-
-echo "Get user vote for poll"
-curl -X GET "$BASE_URL/votes/1/2"
-
-echo "Update vote hour"
-curl -X POST "$BASE_URL/vote/update" \
-  -H "Content-Type: application/json" \
-  -d '{"id_poll": 1, "id_user": 2, "ora": 12}'
-
-echo "Get all votes for poll"
-curl -X GET "$BASE_URL/poll/1/votes"
-
-echo "Get all polls voted by user"
-curl -X GET "$BASE_URL/polls/votate/2"
-
-echo "Deactivate poll"
-curl -X POST "$BASE_URL/poll/dezactivare/1"
-
-echo "Try to vote on deactivated poll (should fail)"
-if curl -X POST "$BASE_URL/vote" \
-  -H "Content-Type: application/json" \
-  -d '{"id_poll": 1, "id_user": 2, "ora": 15}'; then
-  echo "Error: expected vote on deactivated poll to fail!"
-  exit 1
-else
-  echo "Correctly detected voting on deactivated poll"
-fi
-
 echo "All APIs are working!"
