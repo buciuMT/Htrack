@@ -36,6 +36,8 @@ services:
       - ${DB_PORT_HOST}:3306
     volumes:
         - ./db_data:/var/lib/mysql
+        - ../:/docker-entrypoint-initdb.d/
+
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 30s
