@@ -12,6 +12,9 @@ Cerințele din barem sunt descrise în **[wiki](https://github.com/buciuMT/Htrac
 ## Descrierea Proiectului
 Proiectul este o aplicație Android care permite gestionarea eficientă a abonamentelor la sală. Utilizatorii pot să iși creeze cont, iar adminul aplicației poate să îi atribuie unui trainer. Trainerul are posibilitatea de a programa ședințe de antrenament, de a gestiona abonamentele studenților săi, dar și de a comunica cu ei în mod direct.
 
+## Demo
+Demo: https://youtu.be/CKOtKKqqJC4
+
 ## Diagrame UML (Realizate folosind PlantUML)
 
 ![Gym Project - Arhitectura Generală](https://github.com/user-attachments/assets/18077b77-2f91-4251-8625-e0dd3439d785)
