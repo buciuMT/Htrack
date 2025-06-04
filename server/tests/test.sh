@@ -30,10 +30,6 @@ curl -X POST http://localhost:8000/abonament/dezactivare \
   -H "Content-Type: application/json" \
   -d '{"id_user": 4}'
 
-curl -X POST http://localhost:8000/messages \
-  -H "Content-Type: application/json" \
-  -d '{"id_conversation": 1, "id_sender": 4, "mesaj": "Hello, trainer!"}'
-
 curl -X POST http://localhost:8000/conversations/1/users/4/mark-seen
 
 echo "All APIs are working!"
